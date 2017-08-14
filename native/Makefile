@@ -7,12 +7,12 @@ build:
 	    -I'${JAVA}/linux' \
 	    -Wall -Werror \
 	    -fPIC \
-	    -c BucketBufferArray.h BucketBufferArray.c
+	    -c *.h *.c
 
 
 
 shared: build
-	gcc -shared -o libnativeMap.so BucketBufferArray.o
+	gcc -shared -o libnativeMap.so *.o
 
 copy: shared
 	cp libnativeMap.so ../jnative/src/main/resources/lib
