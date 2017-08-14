@@ -31,6 +31,14 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_free
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    allocateBucketBufferHeader
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateBucketBufferHeader
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    allocateNewBucketBuffer
  * Signature: (JJI)J
  */

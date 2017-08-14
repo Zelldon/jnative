@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <stdlib.h>
+#include <stdint.h>
 
 #include "BucketBufferArray.h"
-#include <stdlib.h>
 #include "BucketBufferArrayDescriptor.h"
+#include "serialization.h"
 
 
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocate
@@ -31,11 +33,27 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_free
     free((void*) address);
 }
 
-
-void clearOverflowPointers(char *bucketBufferPtr, int maxBucketLength)
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    allocateBucketBufferHeader
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateBucketBufferHeader
+  (JNIEnv *env, jobject jobj)
 {
-    const int startOffset = BUCKET_BUFFER_HEADER_LENGTH;
-    for (int i = 0; i < ALLOCATION_FACTOR; i++)
+    uint8_t *bucketBufferHeader = malloc(MAIN_BUCKET_BUFFER_HEADER_LEN);
+    
+    serialize_int32(bucketBufferHeader + MAIN_BUFFER_COUNT_OFFSET, 0);
+    serialize_int32(bucketBufferHeader + MAIN_BUCKET_COUNT_OFFSET, 0);
+    serialize_int64(bucketBufferHeader + MAIN_BLOCK_COUNT_OFFSET, 0L);
+    
+    return (uint64_t) bucketBufferHeader;    
+}
+
+void clearOverflowPointers(uint8_t *bucketBufferPtr, uint32_t maxBucketLength)
+{
+    const uint8_t startOffset = BUCKET_BUFFER_HEADER_LENGTH;
+    for (uint32_t i = 0; i < ALLOCATION_FACTOR; i++)
     {
         bucketBufferPtr[startOffset + i * maxBucketLength] = 0;
     }
@@ -55,7 +73,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     
     // low lvl
     // realAddresses[newBucketBufferId] = UNSAFE.allocateMemory(maxBucketBufferLength);
-    char *newBucketBufferPtr = malloc(maxBucketBufferLength);
+    uint8_t *newBucketBufferPtr = malloc(maxBucketBufferLength);
     
     // not necessary
     //    UNSAFE.setMemory(realAddresses[newBucketBufferId], maxBucketBufferLength, (byte) 0);
@@ -69,9 +87,9 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     //     setBucketBufferCount(getBucketBufferCount() + 1);
     newBucketBufferPtr[BUCKET_BUFFER_BUCKET_COUNT_OFFSET] = 0;
     clearOverflowPointers(newBucketBufferPtr, maxBucketLength);
-    ((char*) bucketBufferHeaderAddress)[MAIN_BUFFER_COUNT_OFFSET]++;
+    ((uint8_t*) bucketBufferHeaderAddress)[MAIN_BUFFER_COUNT_OFFSET]++;
     
-    return (long) newBucketBufferPtr;
+    return (uint64_t) newBucketBufferPtr;
 }
 
 
