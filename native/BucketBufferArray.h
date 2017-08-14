@@ -45,6 +45,30 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateBucketBuf
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucketBuffer
   (JNIEnv *, jobject, jlong, jlong, jint);
 
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readInt
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_readInt
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readLong
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    allocateNewBucket
+ * Signature: (JJIII)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
+  (JNIEnv *, jobject, jlong, jlong, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

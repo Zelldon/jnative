@@ -96,5 +96,59 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     return (uint64_t) newBucketBufferPtr;
 }
 
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readInt
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_readInt
+  (JNIEnv *env, jobject jobj, jlong address)
+{
+    int32_t value = 0;
+    deserialize_int32((uint8_t *) address, &value);
+    return value;
+}
 
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readLong
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
+  (JNIEnv *env, jobject jobj, jlong address)
+{
+    int64_t value = 0L;
+    deserialize_int64((uint8_t *) address, &value);
+    return value;
+    
+}
 
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    allocateNewBucket
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
+  (JNIEnv *env, jobject jobj, jlong bucketBufferHeaderAddress, jlong address, jint bucketOffset, jint newBucketId, jint newBucketDepth)
+{
+    //        setBucketId(bucketBufferId, bucketOffset, newBucketId);
+    //        setBucketDepth(bucketBufferId, bucketOffset, newBucketDepth);
+    //        initBucketFillCount(bucketBufferId, bucketOffset);
+    serialize_int32((uint8_t*) address + bucketOffset + BUCKET_FILL_COUNT_OFFSET, 0);
+    serialize_int32((uint8_t*) address + bucketOffset + BUCKET_ID_OFFSET, newBucketId);
+    serialize_int32((uint8_t*) address + bucketOffset + BUCKET_DEPTH_OFFSET, newBucketDepth);
+    
+    // maybe set overflow pointer here? instead clear all on new bucket buffer
+    
+    //        setBucketCount(bucketBufferId, bucketCountInBucketBuffer + 1);
+    uint8_t *bucketBufferBucketCountAddress = ((uint8_t*) address) + BUCKET_BUFFER_BUCKET_COUNT_OFFSET;
+    int32_t count = 0;
+    deserialize_int32(bucketBufferBucketCountAddress, &count);
+    serialize_int32(bucketBufferBucketCountAddress,  count + 1);
+    
+    //        setBucketCount(getBucketCount() + 1);        
+    uint8_t *mainBucketCountAddress = ((uint8_t*) bucketBufferHeaderAddress) + MAIN_BUCKET_COUNT_OFFSET;
+    count = 0;
+    deserialize_int32(mainBucketCountAddress, &count);
+    serialize_int32(mainBucketCountAddress,  count + 1);
+}
