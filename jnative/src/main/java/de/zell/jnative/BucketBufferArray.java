@@ -16,18 +16,12 @@
 package de.zell.jnative;
 
 /**
- * Hello world!
  *
  */
-public class App
+public class BucketBufferArray
 {
-    public static void main(String[] args)
-    {
-        final BucketBufferArray bucketBufferArray = new BucketBufferArray();
-        final long address = bucketBufferArray.allocate(256);
-        System.out.println("Allocated 256 bytes on " + address);
 
-        bucketBufferArray.free(address);
-        System.out.println("Free 256 bytes on " + address);
-    }
+    public native long allocate(long size);
+
+    public native void free(long address);
 }
