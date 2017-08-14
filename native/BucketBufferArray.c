@@ -55,7 +55,7 @@ void clearOverflowPointers(uint8_t *bucketBufferPtr, uint32_t maxBucketLength)
     const uint8_t startOffset = BUCKET_BUFFER_HEADER_LENGTH;
     for (uint32_t i = 0; i < ALLOCATION_FACTOR; i++)
     {
-        bucketBufferPtr[startOffset + i * maxBucketLength] = 0;
+        serialize_int64(bucketBufferPtr + startOffset + i * maxBucketLength, 0L);
     }
 }
 
@@ -85,9 +85,13 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     //        setBucketCount(newBucketBufferId, 0);
     //        clearOverflowPointers(newBucketBufferId);
     //     setBucketBufferCount(getBucketBufferCount() + 1);
-    newBucketBufferPtr[BUCKET_BUFFER_BUCKET_COUNT_OFFSET] = 0;
+    serialize_int32(newBucketBufferPtr + BUCKET_BUFFER_BUCKET_COUNT_OFFSET, 0);
     clearOverflowPointers(newBucketBufferPtr, maxBucketLength);
-    ((uint8_t*) bucketBufferHeaderAddress)[MAIN_BUFFER_COUNT_OFFSET]++;
+    
+    uint8_t *address = ((uint8_t*) bucketBufferHeaderAddress) + MAIN_BUFFER_COUNT_OFFSET;
+    int32_t count = 0;
+    deserialize_int32(address, &count);
+    serialize_int32(address,  count + 1);
     
     return (uint64_t) newBucketBufferPtr;
 }
