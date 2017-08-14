@@ -17,7 +17,6 @@ package de.zell.jnative;
 
 import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_BUFFER_HEADER_LENGTH;
 import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
-import static io.zeebe.map.BucketBufferArrayDescriptor.MAIN_BUCKET_BUFFER_HEADER_LEN;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 
@@ -90,15 +89,36 @@ public class BucketBufferArray
         capacity = 0;
         countOfUsedBytes = BUCKET_BUFFER_HEADER_LENGTH;
 
-//        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
-        bucketBufferHeaderAddress = allocate(MAIN_BUCKET_BUFFER_HEADER_LEN);
-
-//        setBucketBufferCount(0);
-//        setBucketCount(0);
-//        setBlockCount(0);
+        //        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
+        //        setBucketBufferCount(0);
+        //        setBucketCount(0);
+        //        setBlockCount(0);
+        bucketBufferHeaderAddress = allocateBucketBufferHeader();
 
         allocateNewBucketBuffer(0);
     }
+
+    private native long allocateBucketBufferHeader();
+
+    private void allocateNewBucketBuffer(int newBucketBufferId)
+    {
+        if (newBucketBufferId >= realAddresses.length)
+        {
+            final long newAddressTable[] = new long[realAddresses.length * 2];
+            System.arraycopy(realAddresses, 0, newAddressTable, 0, realAddresses.length);
+            realAddresses = newAddressTable;
+        }
+
+
+
+        realAddresses[newBucketBufferId] =
+            allocateNewBucketBuffer(bucketBufferHeaderAddress, maxBucketBufferLength, maxBucketLength);
+    }
+
+    private native long allocateNewBucketBuffer(long mainBucketBufferAddress,
+                                                long maxBucketBufferLength, int maxBucketLength);
+
+
 //
 //    // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
 //
@@ -564,23 +584,6 @@ public class BucketBufferArray
 //        }
 //    }
 //
-    private void allocateNewBucketBuffer(int newBucketBufferId)
-    {
-        if (newBucketBufferId >= realAddresses.length)
-        {
-            final long newAddressTable[] = new long[realAddresses.length * 2];
-            System.arraycopy(realAddresses, 0, newAddressTable, 0, realAddresses.length);
-            realAddresses = newAddressTable;
-        }
-
-
-
-        realAddresses[newBucketBufferId] =
-            allocateNewBucketBuffer(bucketBufferHeaderAddress, maxBucketBufferLength, maxBucketLength);
-    }
-
-    private native long allocateNewBucketBuffer(long mainBucketBufferAddress,
-                                                long maxBucketBufferLength, int maxBucketLength);
 
 //
 //    private void clearOverflowPointers(int bucketBufferId)
