@@ -21,6 +21,11 @@ package de.zell.jnative;
  */
 public class App
 {
+    static
+    {
+        System.loadLibrary("nativeMap");
+    }
+
     public static void main(String[] args)
     {
         final BucketBufferArray bucketBufferArray = new BucketBufferArray();
