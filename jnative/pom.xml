@@ -1,144 +1,156 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>de.zell.jnative</groupId>
-  <artifactId>jnative</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>jnative</name>
-  <url>http://github.com/Zelldon/jnative</url>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.zell.jnative</groupId>
+    <artifactId>jnative</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>jnative</name>
+    <url>http://github.com/Zelldon/jnative</url>
+    <inceptionYear>2017</inceptionYear>
 
+    <properties>
+        <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+        <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
 
-  <properties>
-    <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
-    <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
+        <!-- EXTERNAL LIBS -->
+        <version.junit>4.12</version.junit>
+        <version.mockito>1.8.5</version.mockito>
+        <version.assertj>3.8.0</version.assertj>
+        <version.slf4j>1.7.23</version.slf4j>
+        <version.log4j>2.8.1</version.log4j>
 
-    <!-- EXTERNAL LIBS -->
-    <version.junit>4.12</version.junit>
-    <version.mockito>1.8.5</version.mockito>
-    <version.assertj>3.8.0</version.assertj>
-    <version.slf4j>1.7.23</version.slf4j>
-    <version.log4j>2.8.1</version.log4j>
+        <!-- zb-build-tools -->
+        <version.build-tools>0.1.0-alpha3</version.build-tools>
 
-    <!-- zb-build-tools -->
-    <version.build-tools>0.1.0-alpha3</version.build-tools>
+        <!-- maven plugins -->
+        <plugin.version.compiler>3.5.1</plugin.version.compiler>
+        <plugin.version.checkstyle>2.17</plugin.version.checkstyle>
+        <plugin.version.license>3.0</plugin.version.license>
+        <plugin.version.surefire>2.20</plugin.version.surefire>
+    </properties>
 
-    <!-- maven plugins -->
-    <plugin.version.compiler>3.5.1</plugin.version.compiler>
-    <plugin.version.checkstyle>2.17</plugin.version.checkstyle>
-    <plugin.version.license>3.0</plugin.version.license>
-    <plugin.version.surefire>2.20</plugin.version.surefire>
-  </properties>
+    <!-- DEPENDENCIES -->
 
-  <!-- DEPENDENCIES -->
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${version.junit}</version>
-      <scope>test</scope>
-    </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${version.assertj}</version>
+            <scope>test</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${version.assertj}</version>
-      <scope>test</scope>
-    </dependency>
+        <dependency>
+            <groupId>io.zeebe</groupId>
+            <artifactId>zb-map</artifactId>
+            <version>0.1.0</version>
+        </dependency>
 
-  </dependencies>
+        <dependency>
+            <groupId>org.agrona</groupId>
+            <artifactId>agrona</artifactId>
+            <version>0.9.2</version>
+        </dependency>
 
-  <!-- BUILD -->
+    </dependencies>
 
-  <build>
-    <plugins>
-        <!-- MAVEN COMPILER -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${plugin.version.compiler}</version>
-          <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
-          </configuration>
-        </plugin>
+    <!-- BUILD -->
 
-        <!-- LICENSE PLUGIN -->
-        <plugin>
-          <groupId>com.mycila</groupId>
-          <artifactId>license-maven-plugin</artifactId>
-          <version>${plugin.version.license}</version>
-          <configuration>
-            <header>${license.header}</header>
-            <properties>
-              <owner>camunda services GmbH</owner>
-              <email>info@camunda.com</email>
-            </properties>
-            <includes>
-              <include>**/*.java</include>
-            </includes>
-            <mapping>
-              <java>SLASHSTAR_STYLE</java>
-            </mapping>
-          </configuration>
-          <executions>
-            <execution>
-              <id>add-license</id>
-              <phase>compile</phase>
-                <goals>
-                    <goal>format</goal>
-                </goals>
-            </execution>
-          </executions>
-        </plugin>
+    <build>
+        <plugins>
+            <!-- MAVEN COMPILER -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${plugin.version.compiler}</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
 
-        <!-- CHECKSTYLE -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>${plugin.version.checkstyle}</version>
-          <!-- dependency on build tool to reference the checkstyle cfg -->
-          <dependencies>
-            <dependency>
-              <groupId>io.zeebe</groupId>
-              <artifactId>zb-build-tools</artifactId>
-              <version>${version.build-tools}</version>
-            </dependency>
-          </dependencies>
-          <configuration>
-            <configLocation>check/.checkstyle.xml</configLocation>
-            <includeTestSourceDirectory>true</includeTestSourceDirectory>
-            <encoding>UTF-8</encoding>
-            <failOnViolation>true</failOnViolation>
-          </configuration>
-          <executions>
-            <execution>
-              <id>validate-java</id>
-              <phase>validate</phase>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
+            <!-- LICENSE PLUGIN -->
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${plugin.version.license}</version>
+                <configuration>
+                    <header>${license.header}</header>
+                    <properties>
+                        <owner>Christopher Zell</owner>
+                        <email>zelldon91@gmail.com</email>
+                    </properties>
+                    <includes>
+                        <include>**/*.java</include>
+                    </includes>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                    </mapping>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>add-license</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-        <!-- MAVEN SUREFIRE -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${plugin.version.surefire}</version>
-          <configuration>
-            <failIfNoTests>false</failIfNoTests>
-            <trimStackTrace>false</trimStackTrace>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-            <argLine>-Djava.library.path=${basedir}/src/main/resources/lib</argLine>
-          </configuration>
-        </plugin>
+            <!-- CHECKSTYLE -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${plugin.version.checkstyle}</version>
+                <!-- dependency on build tool to reference the checkstyle cfg -->
+                <dependencies>
+                    <dependency>
+                        <groupId>io.zeebe</groupId>
+                        <artifactId>zb-build-tools</artifactId>
+                        <version>${version.build-tools}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>check/.checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <encoding>UTF-8</encoding>
+                    <failOnViolation>true</failOnViolation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate-java</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-      </plugins>
+            <!-- MAVEN SUREFIRE -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${plugin.version.surefire}</version>
+                <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                    <trimStackTrace>false</trimStackTrace>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <argLine>-Djava.library.path=${basedir}/src/main/resources/lib</argLine>
+                </configuration>
+            </plugin>
+
+        </plugins>
     </build>
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright © ${project.inceptionYear} camunda services GmbH (info@camunda.com)
+ * Copyright © 2017 Christopher Zell (zelldon91@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package de.zell.jnative;
 
+import static org.agrona.BitUtil.SIZE_OF_LONG;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 /**
@@ -23,15 +26,37 @@ import org.junit.Test;
 public class BucketBufferArrayTest
 {
 
+    private final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+
     @Test
     public void shouldAllocateBucket()
     {
+        //given
 
-        final BucketBufferArray bucketBufferArray = new BucketBufferArray();
+        // when
         final long address = bucketBufferArray.allocate(256);
-        System.out.println("Allocated 256 bytes on " + address);
 
+        // then
+        assertThat(address).isGreaterThan(-1);
+    }
+
+    @Test
+    public void shouldFreeBucket()
+    {
+        //given
+        final long address = bucketBufferArray.allocate(256);
+
+        // when
         bucketBufferArray.free(address);
-        System.out.println("Free 256 bytes on " + address);
+
+        // then no error
+    }
+
+    @Test
+    public void shouldInitBucketBufferArray()
+    {
+        // given
+
+
     }
 }
