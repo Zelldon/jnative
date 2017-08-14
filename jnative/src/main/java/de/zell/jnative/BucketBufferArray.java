@@ -15,8 +15,7 @@
  */
 package de.zell.jnative;
 
-import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_BUFFER_HEADER_LENGTH;
-import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
+import static io.zeebe.map.BucketBufferArrayDescriptor.*;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 
@@ -100,7 +99,7 @@ public class BucketBufferArray
 
     private native long allocateBucketBufferHeader();
 
-    private void allocateNewBucketBuffer(int newBucketBufferId)
+    protected void allocateNewBucketBuffer(int newBucketBufferId)
     {
         if (newBucketBufferId >= realAddresses.length)
         {
@@ -109,8 +108,7 @@ public class BucketBufferArray
             realAddresses = newAddressTable;
         }
 
-
-
+        capacity += maxBucketBufferLength;
         realAddresses[newBucketBufferId] =
             allocateNewBucketBuffer(bucketBufferHeaderAddress, maxBucketBufferLength, maxBucketLength);
     }
@@ -122,30 +120,34 @@ public class BucketBufferArray
 //
 //    // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
 //
-//    protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
-//    {
-//        long bucketAddress = 0;
-//        bucketAddress += (long) bucketBufferId << 32;
-//        bucketAddress += bucketOffset;
-//        return bucketAddress;
-//    }
-//
-//    private long getRealAddress(final long bucketAddress)
-//    {
-//        final int bucketBufferId = (int) (bucketAddress >> 32);
-//        final int bucketOffset = (int) bucketAddress;
-//        return getRealAddress(bucketBufferId, bucketOffset);
-//    }
-//
-//    private long getRealAddress(int bucketBufferId, int offset)
-//    {
-//        if (offset < 0 || offset >= maxBucketBufferLength)
-//        {
-//            throw new IllegalArgumentException("Can't access " + offset + " max bucket buffer length is: " + maxBucketBufferLength);
-//        }
-//
-//        return realAddresses[bucketBufferId] + offset;
-//    }
+    protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
+    {
+        long bucketAddress = 0;
+        bucketAddress += (long) bucketBufferId << 32;
+        bucketAddress += bucketOffset;
+        return bucketAddress;
+    }
+
+    private long getRealAddress(final long bucketAddress)
+    {
+        final int bucketBufferId = (int) (bucketAddress >> 32);
+        final int bucketOffset = (int) bucketAddress;
+        return getRealAddress(bucketBufferId, bucketOffset);
+    }
+
+    private long getRealAddress(int bucketBufferId, int offset)
+    {
+        if (offset < 0 || offset >= maxBucketBufferLength)
+        {
+            throw new IllegalArgumentException("Can't access " + offset + " max bucket buffer length is: " + maxBucketBufferLength);
+        }
+
+        return realAddresses[bucketBufferId] + offset;
+    }
+
+    private native int readInt(long address);
+    private native long readLong(long address);
+
 //
 //    private void setBucketBufferCount(int newBucketBufferCount)
 //    {
@@ -162,20 +164,20 @@ public class BucketBufferArray
 //        UNSAFE.putLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET, newBlockCount);
 //    }
 //
-//    public int getBucketBufferCount()
-//    {
-//        return UNSAFE.getInt(bucketBufferHeaderAddress + MAIN_BUFFER_COUNT_OFFSET);
-//    }
-//
-//    public int getBucketCount()
-//    {
-//        return UNSAFE.getInt(bucketBufferHeaderAddress + MAIN_BUCKET_COUNT_OFFSET);
-//    }
-//
-//    public long getBlockCount()
-//    {
-//        return UNSAFE.getLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET);
-//    }
+    public int getBucketBufferCount()
+    {
+        return readInt(bucketBufferHeaderAddress + MAIN_BUFFER_COUNT_OFFSET);
+    }
+
+    public int getBucketCount()
+    {
+        return readInt(bucketBufferHeaderAddress + MAIN_BUCKET_COUNT_OFFSET);
+    }
+
+    public long getBlockCount()
+    {
+        return readLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET);
+    }
 //
 //    @Override
 //    public void close()
@@ -194,26 +196,26 @@ public class BucketBufferArray
 //    {
 //        return BUCKET_BUFFER_HEADER_LENGTH;
 //    }
-//
-//    public long getCapacity()
-//    {
-//        return capacity;
-//    }
-//
-//    protected long getCountOfUsedBytes()
-//    {
-//        return countOfUsedBytes;
-//    }
-//
-//    public long size()
-//    {
-//        return MAIN_BUCKET_BUFFER_HEADER_LEN + countOfUsedBytes;
-//    }
-//
-//    public int getMaxBucketBufferLength()
-//    {
-//        return maxBucketBufferLength;
-//    }
+
+    public long getCapacity()
+    {
+        return capacity;
+    }
+
+    protected long getCountOfUsedBytes()
+    {
+        return countOfUsedBytes;
+    }
+
+    public long size()
+    {
+        return MAIN_BUCKET_BUFFER_HEADER_LEN + countOfUsedBytes;
+    }
+
+    public int getMaxBucketBufferLength()
+    {
+        return maxBucketBufferLength;
+    }
 //
 //    public float getLoadFactor()
 //    {
@@ -228,17 +230,17 @@ public class BucketBufferArray
 //        }
 //    }
 //
-//    public int getMaxBucketLength()
-//    {
-//        return maxBucketLength;
-//    }
+    public int getMaxBucketLength()
+    {
+        return maxBucketLength;
+    }
 //
 //    // BUCKET BUFFER ///////////////////////////////////////////////////////////////
 //
-//    public int getBucketCount(int bucketBufferId)
-//    {
-//        return UNSAFE.getInt(getRealAddress(bucketBufferId, BUCKET_BUFFER_BUCKET_COUNT_OFFSET));
-//    }
+    public int getBucketCount(int bucketBufferId)
+    {
+        return readInt(getRealAddress(bucketBufferId, BUCKET_BUFFER_BUCKET_COUNT_OFFSET));
+    }
 //
 //    private void setBucketCount(int bucketBufferId, int blockCount)
 //    {
@@ -421,41 +423,47 @@ public class BucketBufferArray
 //        }
 //    }
 //
-//    /**
-//     * Allocates new bucket and returns the bucket start address.
-//     *
-//     * @param newBucketId the new block id
-//     * @param newBucketDepth the new block depth
-//     * @return the new block address
-//     */
-//    public long allocateNewBucket(int newBucketId, int newBucketDepth)
-//    {
-//        long newUsed = countOfUsedBytes + maxBucketLength;
-//        int bucketBufferId = getBucketBufferCount() - 1;
-//        int bucketCountInBucketBuffer = getBucketCount(bucketBufferId);
-//
-//        if (bucketCountInBucketBuffer >= ALLOCATION_FACTOR)
-//        {
-//            allocateNewBucketBuffer(++bucketBufferId);
-//            bucketCountInBucketBuffer = 0;
-//            newUsed += BUCKET_BUFFER_HEADER_LENGTH;
-//        }
-//
-//        final int bucketOffset = BUCKET_BUFFER_HEADER_LENGTH + bucketCountInBucketBuffer * maxBucketLength;
-//        final long bucketAddress = getBucketAddress(bucketBufferId, bucketOffset);
-//
-//        countOfUsedBytes = newUsed;
-//
+    /**
+     * Allocates new bucket and returns the bucket start address.
+     *
+     * @param newBucketId the new block id
+     * @param newBucketDepth the new block depth
+     * @return the new block address
+     */
+    public long allocateNewBucket(int newBucketId, int newBucketDepth)
+    {
+        long newUsed = countOfUsedBytes + maxBucketLength;
+        int bucketBufferId = getBucketBufferCount() - 1;
+        int bucketCountInBucketBuffer = getBucketCount(bucketBufferId);
+
+        if (bucketCountInBucketBuffer >= ALLOCATION_FACTOR)
+        {
+            allocateNewBucketBuffer(++bucketBufferId);
+            bucketCountInBucketBuffer = 0;
+            newUsed += BUCKET_BUFFER_HEADER_LENGTH;
+        }
+
+        final int bucketOffset = BUCKET_BUFFER_HEADER_LENGTH + bucketCountInBucketBuffer * maxBucketLength;
+        final long bucketAddress = getBucketAddress(bucketBufferId, bucketOffset);
+
+        countOfUsedBytes = newUsed;
+
+        // low level
+
 //        setBucketId(bucketBufferId, bucketOffset, newBucketId);
 //        setBucketDepth(bucketBufferId, bucketOffset, newBucketDepth);
 //        initBucketFillCount(bucketBufferId, bucketOffset);
 //
 //        setBucketCount(bucketBufferId, bucketCountInBucketBuffer + 1);
 //        setBucketCount(getBucketCount() + 1);
-//
-//        return bucketAddress;
-//    }
-//
+        allocateNewBucket(bucketBufferHeaderAddress, realAddresses[bucketBufferId], bucketOffset, newBucketId, newBucketDepth);
+
+        return bucketAddress;
+    }
+
+    private native void allocateNewBucket(long bucketBufferHeaderAddress, long bucketBufferAddress, int bucketOffset,
+                                          int newBucketId, int newBucketDepth);
+
 //    public void relocateBlock(long bucketAddress, int blockOffset, long newBucketAddress)
 //    {
 //        final int destBucketFillCount = getBucketFillCount(newBucketAddress);
@@ -484,90 +492,10 @@ public class BucketBufferArray
 //            // TODO remove overflow buckets
 //        }
 //    }
+
+
 //
-//    // BUCKET BUFFER IO ///////////////////////////
 //
-//    private void write(OutputStream outputStream, byte[] writeBuffer, long sourceAddress, int maxWriteLength) throws IOException
-//    {
-//        int remainingBytesToWrite = maxWriteLength;
-//        while (remainingBytesToWrite > 0)
-//        {
-//            final int copyLength = Math.min(writeBuffer.length, remainingBytesToWrite);
-//            final int offset = maxWriteLength - remainingBytesToWrite;
-//            UNSAFE.copyMemory(null, sourceAddress + offset, writeBuffer, ARRAY_BASE_OFFSET, copyLength);
-//            outputStream.write(writeBuffer, 0, copyLength);
-//            remainingBytesToWrite -= copyLength;
-//        }
-//    }
-//
-//    public void writeToStream(OutputStream outputStream, byte[] writeBuffer) throws IOException
-//    {
-//        // write main header
-//        write(outputStream, writeBuffer, bucketBufferHeaderAddress, MAIN_BUCKET_BUFFER_HEADER_LEN);
-//
-//        // write data
-//        final int bucketBufferCount = getBucketBufferCount();
-//        for (int bucketBufferIndex = 0; bucketBufferIndex < bucketBufferCount - 1; bucketBufferIndex++)
-//        {
-//            write(outputStream, writeBuffer, realAddresses[bucketBufferIndex], getMaxBucketBufferLength());
-//        }
-//
-//        // last bucket buffer is most of the time not full
-//        final long remainingBytes = countOfUsedBytes - ((bucketBufferCount - 1) * getMaxBucketBufferLength());
-//        write(outputStream, writeBuffer, realAddresses[bucketBufferCount - 1], (int) remainingBytes);
-//    }
-//
-//    private int readInto(InputStream inputStream, byte[] readBuffer, long destinationAddress, int maxReadLength) throws IOException
-//    {
-//        int remainingBytes = maxReadLength;
-//        int readLength = Math.min(readBuffer.length, remainingBytes);
-//        int bytesRead = 0;
-//
-//        while (remainingBytes > 0 && bytesRead >= 0)
-//        {
-//            bytesRead = inputStream.read(readBuffer, 0, readLength);
-//
-//            if (bytesRead > 0)
-//            {
-//                final int offset = maxReadLength - remainingBytes;
-//                UNSAFE.copyMemory(readBuffer, ARRAY_BASE_OFFSET, null, destinationAddress + offset, bytesRead);
-//
-//                remainingBytes -= bytesRead;
-//                readLength = Math.min(readBuffer.length, remainingBytes);
-//            }
-//        }
-//        return maxReadLength - remainingBytes;
-//    }
-//
-//    public void readFromStream(InputStream inputStream, byte[] buffer) throws IOException
-//    {
-//        clear();
-//        countOfUsedBytes = 0;
-//
-//        try
-//        {
-//            readInto(inputStream, buffer, bucketBufferHeaderAddress, MAIN_BUCKET_BUFFER_HEADER_LEN);
-//
-//            final int readBucketBufferCount = getBucketBufferCount();
-//            setBucketBufferCount(1);
-//            int readBytes = 0;
-//            for (int i = 0; i < readBucketBufferCount; i++)
-//            {
-//                if (readBytes == getMaxBucketBufferLength())
-//                {
-//                    allocateNewBucketBuffer(i);
-//                }
-//                readBytes = readInto(inputStream, buffer, realAddresses[i], getMaxBucketBufferLength());
-//                countOfUsedBytes += readBytes;
-//            }
-//        }
-//        catch (IOException ioe)
-//        {
-//            final String errorMessage = String.format(FAIL_MSG_TO_READ_BUCKET_BUFFER, countOfUsedBytes);
-//            clear();
-//            throw new IOException(errorMessage, ioe);
-//        }
-//    }
 //
 //    // HELPER METHODS ////////////////////////
 //
@@ -585,15 +513,6 @@ public class BucketBufferArray
 //    }
 //
 
-//
-//    private void clearOverflowPointers(int bucketBufferId)
-//    {
-//        final int startOffset = BUCKET_BUFFER_HEADER_LENGTH;
-//        for (int i = 0; i < ALLOCATION_FACTOR; i++)
-//        {
-//            clearBucketOverflowPointer(bucketBufferId, startOffset + i * maxBucketLength);
-//        }
-//    }
 //
 //    public String toString()
 //    {
@@ -644,4 +563,9 @@ public class BucketBufferArray
 //               .append("]");
 //        return builder.toString();
 //    }
+
+
+
+
+
 }

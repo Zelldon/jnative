@@ -15,6 +15,8 @@
  */
 package de.zell.jnative;
 
+import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_BUFFER_HEADER_LENGTH;
+import static io.zeebe.map.BucketBufferArrayDescriptor.MAIN_BUCKET_BUFFER_HEADER_LEN;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,12 +28,22 @@ import org.junit.Test;
 public class BucketBufferArrayTest
 {
 
-    private final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+    @Test
+    public void shouldCreateBucketBufferArray()
+    {
+        // when
+        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+
+        // then
+        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH);
+        assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH);
+    }
 
     @Test
-    public void shouldAllocateBucket()
+    public void shouldAllocate()
     {
         //given
+        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
 
         // when
         final long address = bucketBufferArray.allocate(256);
@@ -41,9 +53,10 @@ public class BucketBufferArrayTest
     }
 
     @Test
-    public void shouldFreeBucket()
+    public void shouldFree()
     {
         //given
+        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
         final long address = bucketBufferArray.allocate(256);
 
         // when
@@ -53,10 +66,40 @@ public class BucketBufferArrayTest
     }
 
     @Test
-    public void shouldInitBucketBufferArray()
+    public void shouldAllocateNewBucketBuffer()
     {
-        // given
+        //given
+        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
 
+        // when
+        bucketBufferArray.allocateNewBucketBuffer(1);
 
+        // then
+        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH);
+        assertThat(bucketBufferArray.getCapacity()).isEqualTo(2 * bucketBufferArray.getMaxBucketBufferLength());
+        assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH);
     }
+
+
+
+    @Test
+    public void shouldAllocateBucket()
+    {
+        //given
+        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+
+        // when
+        bucketBufferArray.allocateNewBucket(1, 1);
+
+        // then
+        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH + bucketBufferArray.getMaxBucketLength());
+        assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH + bucketBufferArray.getMaxBucketLength());
+        assertThat(bucketBufferArray.getCapacity()).isEqualTo(bucketBufferArray.getMaxBucketBufferLength());
+
+        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(1);
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(1);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
+    }
+
+
 }
