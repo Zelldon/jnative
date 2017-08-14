@@ -15,19 +15,18 @@
  */
 package de.zell.jnative;
 
+import org.junit.Test;
+
 /**
- * Hello world!
  *
  */
-public class App
+public class BucketBufferArrayTest
 {
-    static
-    {
-        System.loadLibrary("nativeMap");
-    }
 
-    public static void main(String[] args)
+    @Test
+    public void shouldAllocateBucket()
     {
+
         final BucketBufferArray bucketBufferArray = new BucketBufferArray();
         final long address = bucketBufferArray.allocate(256);
         System.out.println("Allocated 256 bytes on " + address);

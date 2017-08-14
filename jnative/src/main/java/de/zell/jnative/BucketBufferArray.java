@@ -20,6 +20,10 @@ package de.zell.jnative;
  */
 public class BucketBufferArray
 {
+    static
+    {
+        System.loadLibrary("nativeMap");
+    }
 
     public native long allocate(long size);
 

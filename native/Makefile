@@ -13,3 +13,8 @@ build:
 
 shared: build
 	gcc -shared -o libnativeMap.so BucketBufferArray.o
+
+copy: shared
+	cp libnativeMap.so ../jnative/src/main/resources/lib
+
+all: build shared copy
