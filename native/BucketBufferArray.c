@@ -10,12 +10,11 @@
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocate
   (JNIEnv *env, jobject jobj, jlong size)
 {
-    printf("allocate");
-    return -1L;
+    return (long) malloc(size);
 }
 
 JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_free
   (JNIEnv *env, jobject jobj, jlong address)
 {
-    printf("free");
+    free((void*) address);
 }
