@@ -24,7 +24,7 @@ import io.zeebe.map.BucketBufferArrayDescriptor;
 /**
  *
  */
-public class BucketBufferArray
+public class BucketBufferArray implements AutoCloseable
 {
     static
     {
@@ -74,12 +74,12 @@ public class BucketBufferArray
 
         init();
     }
-//
-//    public void clear()
-//    {
-//        close();
-//        init();
-//    }
+
+    public void clear()
+    {
+        close();
+        init();
+    }
 
     private void init()
     {
@@ -179,18 +179,18 @@ public class BucketBufferArray
         return readLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET);
     }
 //
-//    @Override
-//    public void close()
-//    {
-//        UNSAFE.freeMemory(bucketBufferHeaderAddress);
-//        for (long realAddress : realAddresses)
-//        {
-//            if (realAddress != INVALID_ADDRESS)
-//            {
-//                UNSAFE.freeMemory(realAddress);
-//            }
-//        }
-//    }
+    @Override
+    public void close()
+    {
+        free(bucketBufferHeaderAddress);
+        for (long realAddress : realAddresses)
+        {
+            if (realAddress != INVALID_ADDRESS)
+            {
+                free(realAddress);
+            }
+        }
+    }
 //
 //    public int getFirstBucketOffset()
 //    {
