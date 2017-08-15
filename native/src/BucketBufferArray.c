@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "BucketBufferArray.h"
+#include "de_zell_jnative_BucketBufferArray.h"
 #include "BucketBufferArrayDescriptor.h"
 #include "serialization.h"
 
@@ -152,3 +152,28 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     deserialize_int32(mainBucketCountAddress, &count);
     serialize_int32(mainBucketCountAddress,  count + 1);
 }
+
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getLoadFactor
+ * Signature: (I)F
+ */
+JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
+  (JNIEnv *env, jobject jobj, jlong bucketBufferHeaderAddress, jint maxBucketBlockCount)
+{
+    int32_t bucketCount = 0;
+    deserialize_int32((uint8_t *) bucketBufferHeaderAddress + MAIN_BUCKET_COUNT_OFFSET, &bucketCount);
+
+    if (bucketCount <= 0)
+    {
+        return 0.0F;
+    }
+    else
+    {
+        int64_t blockCount = 0L;
+        deserialize_int64((uint8_t *) bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET, &blockCount);
+        return (float) blockCount / (float) (bucketCount * maxBucketBlockCount);
+    }
+}
+

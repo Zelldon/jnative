@@ -101,5 +101,19 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
     }
 
+    @Test
+    public void shouldGetLoadFactor()
+    {
+        //given
+        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+
+        // when
+        bucketBufferArray.allocateNewBucket(1, 1);
+
+        // then
+        final float loadFactor = bucketBufferArray.getLoadFactor();
+        assertThat(loadFactor).isEqualTo(0.0F);
+    }
+
 
 }

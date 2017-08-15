@@ -63,6 +63,14 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getLoadFactor
+ * Signature: (JI)F
+ */
+JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
+  (JNIEnv *, jobject, jlong, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    allocateNewBucket
  * Signature: (JJIII)V
  */

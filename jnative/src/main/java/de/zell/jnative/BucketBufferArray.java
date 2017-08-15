@@ -216,19 +216,13 @@ public class BucketBufferArray
     {
         return maxBucketBufferLength;
     }
-//
-//    public float getLoadFactor()
-//    {
-//        final int bucketCount = getBucketCount();
-//        if (bucketCount <= 0)
-//        {
-//            return 0.0F;
-//        }
-//        else
-//        {
-//            return (float) getBlockCount() / (float) (bucketCount * maxBucketBlockCount);
-//        }
-//    }
+
+    public float getLoadFactor()
+    {
+        return getLoadFactor(bucketBufferHeaderAddress, maxBucketBlockCount);
+    }
+
+    public native float getLoadFactor(long bucketBufferHeaderAddress, int maxBucketBlockCount);
 //
     public int getMaxBucketLength()
     {
