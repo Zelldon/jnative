@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.zell.jnative</groupId>
     <artifactId>jnative</artifactId>
-    <packaging>jar</packaging>
+    <packaging>nar</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>jnative</name>
     <url>http://github.com/Zelldon/jnative</url>
@@ -29,6 +29,8 @@
         <plugin.version.checkstyle>2.17</plugin.version.checkstyle>
         <plugin.version.license>3.0</plugin.version.license>
         <plugin.version.surefire>2.20</plugin.version.surefire>
+        <plugin.version.nar>3.5.2</plugin.version.nar>
+
     </properties>
 
     <!-- DEPENDENCIES -->
@@ -65,7 +67,87 @@
     <!-- BUILD -->
 
     <build>
+        <defaultGoal>install</defaultGoal>
         <plugins>
+            <plugin>
+                <groupId>com.github.maven-nar</groupId>
+                <artifactId>nar-maven-plugin</artifactId>
+                <version>${plugin.version.nar}</version>
+                <extensions>true</extensions>
+                <configuration>
+
+
+                    <!--Name of the output. Default is $project.artifactId-$project.version.-->
+                    <output>
+                        nativeMap
+                    </output>
+
+                    <!--Directory for all NAR related output. -->
+                    <!--Defaults to "$project.build.directory/nar" for "compile"-->
+                    <!--goal Defaults to "$project.build.directory/test-nar" for "compile-test" goal-->
+                    <!--<targetDirectory>-->
+                        <!--src/main/resources/lib-->
+                    <!--</targetDirectory>-->
+
+                    <!--Section to specify what type or libraries to create. For each library you may specify:-->
+                    <libraries>
+                        <library>
+                            <!--The type of the library: shared, static, jni, plugin, executable. Default is shared.-->
+                            <!--<type>jni</type>-->
+
+                            <!--Specifies if the stdc++ library should be linked with. Default is true.-->
+                            <linkCPP>false</linkCPP>
+
+                            <!--will generate nar java file, to include easily native lib-->
+                            <narSystemPackage>de.zell.jnative</narSystemPackage>
+                        </library>
+                    </libraries>
+
+                    <cpp>
+                        <debug>true</debug>
+                    </cpp>
+                    <!--<c>-->
+                        <!--<sourceDirectory>-->
+                            <!--native/src/-->
+                        <!--</sourceDirectory>-->
+                    <!--</c>-->
+
+                    <javah>
+                        <includes>
+                            <include>
+                            </include>
+                        </includes>
+                    </javah>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/test-classes/lib</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>
+                                        ${basedir}/target/nar/${project.artifactId}-${project.version}-${nar.aol}-shared/lib/${nar.aol}/shared/
+                                    </directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
             <!-- MAVEN COMPILER -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

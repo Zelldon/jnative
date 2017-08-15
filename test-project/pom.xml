@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.zell.jnative</groupId>
+    <artifactId>test</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>test</name>
+
+    <properties>
+        <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+        <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
+
+        <!-- EXTERNAL LIBS -->
+        <version.junit>4.12</version.junit>
+        <version.mockito>1.8.5</version.mockito>
+        <version.assertj>3.8.0</version.assertj>
+        <version.slf4j>1.7.23</version.slf4j>
+        <version.log4j>2.8.1</version.log4j>
+
+        <!-- zb-build-tools -->
+        <version.build-tools>0.1.0-alpha3</version.build-tools>
+
+        <!-- maven plugins -->
+        <plugin.version.nar>3.5.2</plugin.version.nar>
+        <plugin.version.license>3.0</plugin.version.license>
+        <plugin.version.exec>1.6.0</plugin.version.exec>
+
+        <skipTests>true</skipTests>
+    </properties>
+
+    <!-- DEPENDENCIES -->
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.zell.jnative</groupId>
+            <artifactId>jnative</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>nar</type>
+        </dependency>
+
+    </dependencies>
+    <!-- BUILD -->
+
+
+    <build>
+        <defaultGoal>integration-test</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>com.github.maven-nar</groupId>
+                <version>3.5.2</version>
+                <artifactId>nar-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>nar-download</id>
+                        <goals>
+                            <goal>nar-download</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>nar-test-unpack</id>
+                        <goals>
+                            <goal>nar-test-unpack</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>nar-integration-test</id>
+                        <goals>
+                            <goal>nar-integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
