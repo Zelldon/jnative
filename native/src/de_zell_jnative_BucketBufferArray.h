@@ -31,6 +31,14 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_free
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    createInstance
+ * Signature: (IIIII)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_createInstance
+  (JNIEnv *, jobject, jint, jint, jint, jint, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    allocateBucketBufferHeader
  * Signature: ()J
  */
@@ -59,6 +67,14 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_readInt
  * Signature: (J)J
  */
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getCountOfUsedBytes
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getCountOfUsedBytes
   (JNIEnv *, jobject, jlong);
 
 /*

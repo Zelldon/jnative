@@ -54,6 +54,8 @@ public class BucketBufferArray implements AutoCloseable
 
     private long countOfUsedBytes;
 
+    private final long instanceAddress;
+
     public BucketBufferArray(int maxBucketBlockCount, int maxKeyLength, int maxValueLength)
     {
         this.maxBucketLength =
@@ -73,7 +75,12 @@ public class BucketBufferArray implements AutoCloseable
         this.maxValueLength = maxValueLength;
 
         init();
+
+        instanceAddress = createInstance(maxBucketLength, maxBucketBlockCount, maxKeyLength, maxValueLength, maxBucketBufferLength);
     }
+
+    protected native long createInstance(int maxBucketLength, int maxBucketBlockCount,
+                                         int maxKeyLength, int maxValueLength, int maxBucketBufferLength);
 
     public void clear()
     {
@@ -117,9 +124,8 @@ public class BucketBufferArray implements AutoCloseable
                                                 long maxBucketBufferLength, int maxBucketLength);
 
 
-//
-//    // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
-//
+    // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
+
     protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
     {
         long bucketAddress = 0;
@@ -204,8 +210,13 @@ public class BucketBufferArray implements AutoCloseable
 
     protected long getCountOfUsedBytes()
     {
-        return countOfUsedBytes;
+        return getCountOfUsedBytes(instanceAddress);
     }
+
+    protected native long getCountOfUsedBytes(long instanceAddress);
+//    {
+//        return countOfUsedBytes;
+//    }
 
     public long size()
     {
@@ -223,14 +234,14 @@ public class BucketBufferArray implements AutoCloseable
     }
 
     public native float getLoadFactor(long bucketBufferHeaderAddress, int maxBucketBlockCount);
-//
+
     public int getMaxBucketLength()
     {
         return maxBucketLength;
     }
-//
-//    // BUCKET BUFFER ///////////////////////////////////////////////////////////////
-//
+
+    // BUCKET BUFFER ///////////////////////////////////////////////////////////////
+
     public int getBucketCount(int bucketBufferId)
     {
         return readInt(getRealAddress(bucketBufferId, BUCKET_BUFFER_BUCKET_COUNT_OFFSET));
