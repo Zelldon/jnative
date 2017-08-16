@@ -177,8 +177,7 @@ JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
     }
 }
 
-class BucketBufferArray {
-    private:
+struct BucketBufferArray {
 
     int maxBucketLength;
     int maxBucketBlockCount;
@@ -191,99 +190,113 @@ class BucketBufferArray {
     long capacity;
 
     long countOfUsedBytes;
-    // nothing
-    //
-    public:
-
-    BucketBufferArray(int maxBucketLength, int maxBucketBlockCount,
-     int maxKeyLength, int maxValueLength, int maxBucketBufferLength)
-     : maxBucketLength(maxBucketLength), maxBucketBlockCount(maxBucketBlockCount),
-     maxKeyLength(maxKeyLength), maxValueLength(maxValueLength), maxBucketBufferLength(maxBucketBufferLength)
-    {
-
-        realAddresses = new void*[ALLOCATION_FACTOR];
-
-        capacity = 0;
-        countOfUsedBytes = BUCKET_BUFFER_HEADER_LENGTH;
-
-        //        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
-        //        setBucketBufferCount(0);
-        //        setBucketCount(0);
-        //        setBlockCount(0);
-        allocateBucketBufferHeader();
-
-        allocateNewBucketBuffer(0);
-    }
-
-    long getCountOfUsedBytes()
-    {
-        return countOfUsedBytes;
-    }
-
-    private:
-
-    void allocateBucketBufferHeader(void)
-    {
-        bucketBufferHeaderAddress = malloc(MAIN_BUCKET_BUFFER_HEADER_LEN);
-        uint8_t *bucketBufferHeader = (uint8_t*) bucketBufferHeaderAddress;
-
-        serialize_int32(bucketBufferHeader + MAIN_BUFFER_COUNT_OFFSET, 0);
-        serialize_int32(bucketBufferHeader + MAIN_BUCKET_COUNT_OFFSET, 0);
-        serialize_int64(bucketBufferHeader + MAIN_BLOCK_COUNT_OFFSET, 0L);
-
-    }
-
-    void allocateNewBucketBuffer(int newBucketBufferId)
-    {
-
-    // on high lvl
-    //    if (newBucketBufferId >= realAddresses.length)
-    //    {
-    //        final long newAddressTable[] = new long[realAddresses.length * 2];
-    //        System.arraycopy(realAddresses, 0, newAddressTable, 0, realAddresses.length);
-    //        realAddresses = newAddressTable;
-    //    }
-    //
-
-        // low lvl
-        // realAddresses[newBucketBufferId] = UNSAFE.allocateMemory(maxBucketBufferLength);
-        realAddresses[newBucketBufferId] = malloc(maxBucketBufferLength);
-        uint8_t *newBucketBufferPtr = (uint8_t*)  realAddresses[newBucketBufferId];
-
-        // not necessary
-        //    UNSAFE.setMemory(realAddresses[newBucketBufferId], maxBucketBufferLength, (byte) 0);
-
-        // high lvl
-        //       capacity += maxBucketBufferLength;
-        capacity += maxBucketBufferLength;
-
-        // low lvl
-        //        setBucketCount(newBucketBufferId, 0);
-        //        clearOverflowPointers(newBucketBufferId);
-        //     setBucketBufferCount(getBucketBufferCount() + 1);
-        serialize_int32(newBucketBufferPtr + BUCKET_BUFFER_BUCKET_COUNT_OFFSET, 0);
-        clearOverflowPointers(newBucketBufferPtr, maxBucketLength);
-
-        uint8_t *address = ((uint8_t*) bucketBufferHeaderAddress) + MAIN_BUFFER_COUNT_OFFSET;
-        int32_t count = 0;
-        deserialize_int32(address, &count);
-        serialize_int32(address,  count + 1);
-
-    }
 };
 
+//
+//    BucketBufferArray(int maxBucketLength, int maxBucketBlockCount,
+//     int maxKeyLength, int maxValueLength, int maxBucketBufferLength)
+//     : maxBucketLength(maxBucketLength), maxBucketBlockCount(maxBucketBlockCount),
+//     maxKeyLength(maxKeyLength), maxValueLength(maxValueLength), maxBucketBufferLength(maxBucketBufferLength)
+//    {
+//
+//        realAddresses = new void*[ALLOCATION_FACTOR];
+//
+//        capacity = 0;
+//        countOfUsedBytes = BUCKET_BUFFER_HEADER_LENGTH;
+//
+//        //        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
+//        //        setBucketBufferCount(0);
+//        //        setBucketCount(0);
+//        //        setBlockCount(0);
+//        allocateBucketBufferHeader();
+//
+//        allocateNewBucketBuffer(0);
+//    }
+
+void allocateBucketBufferHeader(struct BucketBufferArray* bucketBufferArray)
+{
+    bucketBufferArray->bucketBufferHeaderAddress = malloc(MAIN_BUCKET_BUFFER_HEADER_LEN);
+    uint8_t *bucketBufferHeader = (uint8_t*) bucketBufferArray->bucketBufferHeaderAddress;
+
+    serialize_int32(bucketBufferHeader + MAIN_BUFFER_COUNT_OFFSET, 0);
+    serialize_int32(bucketBufferHeader + MAIN_BUCKET_COUNT_OFFSET, 0);
+    serialize_int64(bucketBufferHeader + MAIN_BLOCK_COUNT_OFFSET, 0L);
+
+}
+
+void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int newBucketBufferId)
+{
+
+// on high lvl
+//    if (newBucketBufferId >= realAddresses.length)
+//    {
+//        final long newAddressTable[] = new long[realAddresses.length * 2];
+//        System.arraycopy(realAddresses, 0, newAddressTable, 0, realAddresses.length);
+//        realAddresses = newAddressTable;
+//    }
+//
+
+    // low lvl
+    // realAddresses[newBucketBufferId] = UNSAFE.allocateMemory(maxBucketBufferLength);
+    bucketBufferArray->realAddresses[newBucketBufferId] = malloc(bucketBufferArray->maxBucketBufferLength);
+    uint8_t *newBucketBufferPtr = (uint8_t*) bucketBufferArray->realAddresses[newBucketBufferId];
+
+    // not necessary
+    //    UNSAFE.setMemory(realAddresses[newBucketBufferId], maxBucketBufferLength, (byte) 0);
+
+    // high lvl
+    //       capacity += maxBucketBufferLength;
+    bucketBufferArray->capacity += bucketBufferArray->maxBucketBufferLength;
+
+    // low lvl
+    //        setBucketCount(newBucketBufferId, 0);
+    //        clearOverflowPointers(newBucketBufferId);
+    //     setBucketBufferCount(getBucketBufferCount() + 1);
+    serialize_int32(newBucketBufferPtr + BUCKET_BUFFER_BUCKET_COUNT_OFFSET, 0);
+    clearOverflowPointers(newBucketBufferPtr, bucketBufferArray->maxBucketLength);
+
+    uint8_t *address = ((uint8_t*) bucketBufferArray->bucketBufferHeaderAddress) + MAIN_BUFFER_COUNT_OFFSET;
+    int32_t count = 0;
+    deserialize_int32(address, &count);
+    serialize_int32(address,  count + 1);
+
+}
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    createInstance
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_createInstance
-  (JNIEnv *, jobject, jint maxBucketLength, jint maxBucketBlockCount,
+  (JNIEnv * env, jobject obj, jint maxBucketLength, jint maxBucketBlockCount,
                            jint maxKeyLength, jint maxValueLength, jint maxBucketBufferLength)
 {
-   BucketBufferArray *bucketBufferArray = new BucketBufferArray(
-                    maxBucketLength, maxBucketBlockCount, maxKeyLength,
-                    maxValueLength, maxBucketBufferLength);
+//   BucketBufferArray *bucketBufferArray = new BucketBufferArray(
+//                    maxBucketLength, maxBucketBlockCount, maxKeyLength,
+//                    maxValueLength, maxBucketBufferLength);
+
+
+    struct BucketBufferArray *bucketBufferArray = malloc(sizeof(struct BucketBufferArray));
+    bucketBufferArray->maxBucketLength = maxBucketLength;
+    bucketBufferArray->maxBucketBlockCount = maxBucketBlockCount;
+    bucketBufferArray->maxKeyLength = maxKeyLength;
+    bucketBufferArray->maxValueLength = maxValueLength;
+    bucketBufferArray->maxBucketBufferLength = maxBucketBufferLength;
+
+
+    bucketBufferArray->realAddresses = malloc(ALLOCATION_FACTOR);
+    bucketBufferArray->capacity = 0;
+    bucketBufferArray->countOfUsedBytes = BUCKET_BUFFER_HEADER_LENGTH;
+
+
+        //        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
+        //        setBucketBufferCount(0);
+        //        setBucketCount(0);
+        //        setBlockCount(0);
+        allocateBucketBufferHeader(bucketBufferArray);
+
+        allocateNewBucketBuffer(bucketBufferArray, 0);
+
+
    return (jlong) bucketBufferArray;
 }
 
@@ -293,9 +306,9 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_createInstance
  * Signature: (J)J
  */
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getCountOfUsedBytes
-  (JNIEnv *, jobject, jlong instanceAddress)
+  (JNIEnv * env, jobject obj, jlong instanceAddress)
   {
-    return ((BucketBufferArray*) instanceAddress)->getCountOfUsedBytes();
+    return ((struct BucketBufferArray*) instanceAddress)->countOfUsedBytes;
   }
 
 
