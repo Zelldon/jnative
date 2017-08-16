@@ -107,12 +107,12 @@
             </plugin>
 
             <!-- CHECKSTYLE -->
-            <plugin>
+            <!--       <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${plugin.version.checkstyle}</version>
+                <version>${plugin.version.checkstyle}</version> -->
                 <!-- dependency on build tool to reference the checkstyle cfg -->
-                <dependencies>
+                <!--      <dependencies>
                     <dependency>
                         <groupId>io.zeebe</groupId>
                         <artifactId>zb-build-tools</artifactId>
@@ -136,7 +136,8 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+              </plugin>
+              -->
 
             <!-- MAVEN SUREFIRE -->
             <plugin>

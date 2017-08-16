@@ -27,3 +27,4 @@ jcompile: mv-lib
 
 all: clean javah ccompile shared-lib mv-lib jcompile clean
 
+build: all
