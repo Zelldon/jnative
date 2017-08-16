@@ -38,60 +38,34 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH);
         assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH);
     }
-
-    @Test
-    public void shouldAllocate()
-    {
-        //given
-        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
-
-        // when
-        final long address = bucketBufferArray.allocate(256);
-
-        // then
-        assertThat(address).isGreaterThan(-1);
-    }
-
-    @Test
-    public void shouldFree()
-    {
-        //given
-        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
-        final long address = bucketBufferArray.allocate(256);
-
-        // when
-        bucketBufferArray.free(address);
-
-        // then no error
-    }
-
-    @Test
-    public void shouldClose()
-    {
-        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
-        bucketBufferArray.allocateNewBucketBuffer(1);
-
-        // when
-        bucketBufferArray.close();
-
-        // then
-    }
-
-
-    @Test
-    public void shouldClear()
-    {
-        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
-        bucketBufferArray.allocateNewBucketBuffer(1);
-
-        // when
-        bucketBufferArray.clear();
-
-        // then
-        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH);
-        assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH);
-    }
-
+//
+//    @Test
+//    public void shouldClose()
+//    {
+//        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+//        bucketBufferArray.allocateNewBucketBuffer(1);
+//
+//        // when
+//        bucketBufferArray.close();
+//
+//        // then
+//    }
+//
+//
+//    @Test
+//    public void shouldClear()
+//    {
+//        final BucketBufferArray bucketBufferArray = new BucketBufferArray(16, SIZE_OF_LONG, SIZE_OF_LONG);
+//        bucketBufferArray.allocateNewBucketBuffer(1);
+//
+//        // when
+//        bucketBufferArray.clear();
+//
+//        // then
+//        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH);
+//        assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH);
+//    }
+//
     @Test
     public void shouldAllocateNewBucketBuffer()
     {
@@ -106,9 +80,9 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getCapacity()).isEqualTo(2 * bucketBufferArray.getMaxBucketBufferLength());
         assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH);
     }
-
-
-
+//
+//
+//
     @Test
     public void shouldAllocateBucket()
     {
@@ -119,7 +93,7 @@ public class BucketBufferArrayTest
         bucketBufferArray.allocateNewBucket(1, 1);
 
         // then
-//        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH + bucketBufferArray.getMaxBucketLength());
+        assertThat(bucketBufferArray.getCountOfUsedBytes()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH + bucketBufferArray.getMaxBucketLength());
         assertThat(bucketBufferArray.size()).isEqualTo(MAIN_BUCKET_BUFFER_HEADER_LEN + BUCKET_BUFFER_HEADER_LENGTH + bucketBufferArray.getMaxBucketLength());
         assertThat(bucketBufferArray.getCapacity()).isEqualTo(bucketBufferArray.getMaxBucketBufferLength());
 
@@ -127,7 +101,7 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getBucketCount()).isEqualTo(1);
         assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
     }
-
+//
     @Test
     public void shouldGetLoadFactor()
     {

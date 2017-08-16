@@ -35,121 +35,90 @@ public class BucketBufferArray implements AutoCloseable
 
     protected native void free(long address);
 
-
     public static final int ALLOCATION_FACTOR = 32;
-    public static final int OVERFLOW_BUCKET_ID = -1;
-    private static final long INVALID_ADDRESS = 0;
+//    public static final int OVERFLOW_BUCKET_ID = -1;
+//    private static final long INVALID_ADDRESS = 0;
 
     private static final String FAIL_MSG_TO_READ_BUCKET_BUFFER = "Failed to read bucket buffer array, managed to read %d bytes.";
-
-    private final int maxBucketLength;
-    private final int maxBucketBlockCount;
-    private final int maxKeyLength;
-    private final int maxValueLength;
-    private final int maxBucketBufferLength;
-
-    private long realAddresses[];
-    private long bucketBufferHeaderAddress;
-    private long capacity;
-
-    private long countOfUsedBytes;
 
     private final long instanceAddress;
 
     public BucketBufferArray(int maxBucketBlockCount, int maxKeyLength, int maxValueLength)
     {
-        this.maxBucketLength =
+        final int maxBucketLength =
             addExact(BUCKET_DATA_OFFSET,
                      multiplyExact(maxBucketBlockCount, BucketBufferArrayDescriptor.getBlockLength(maxKeyLength, maxValueLength)));
+
+        final int maxBucketBufferLength;
         try
         {
-            this.maxBucketBufferLength = addExact(BUCKET_BUFFER_HEADER_LENGTH, multiplyExact(ALLOCATION_FACTOR, maxBucketLength));
+            maxBucketBufferLength = addExact(BUCKET_BUFFER_HEADER_LENGTH, multiplyExact(ALLOCATION_FACTOR, maxBucketLength));
         }
         catch (ArithmeticException ae)
         {
             throw new IllegalArgumentException("Maximum bucket buffer length exceeds integer maximum value.", ae);
         }
 
-        this.maxBucketBlockCount = maxBucketBlockCount;
-        this.maxKeyLength = maxKeyLength;
-        this.maxValueLength = maxValueLength;
-
-        init();
-
         instanceAddress = createInstance(maxBucketLength, maxBucketBlockCount, maxKeyLength, maxValueLength, maxBucketBufferLength);
     }
 
-    protected native long createInstance(int maxBucketLength, int maxBucketBlockCount,
+    private native long createInstance(int maxBucketLength, int maxBucketBlockCount,
                                          int maxKeyLength, int maxValueLength, int maxBucketBufferLength);
 
     public void clear()
     {
         close();
-        init();
+        clearInternal();
     }
 
-    private void init()
-    {
-        this.realAddresses = new long[ALLOCATION_FACTOR];
-
-        capacity = 0;
-        countOfUsedBytes = BUCKET_BUFFER_HEADER_LENGTH;
-
-        //        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
-        //        setBucketBufferCount(0);
-        //        setBucketCount(0);
-        //        setBlockCount(0);
-        bucketBufferHeaderAddress = allocateBucketBufferHeader();
-
-        allocateNewBucketBuffer(0);
-    }
-
-    private native long allocateBucketBufferHeader();
+    private native void clearInternal();
 
     protected void allocateNewBucketBuffer(int newBucketBufferId)
     {
-        if (newBucketBufferId >= realAddresses.length)
-        {
-            final long newAddressTable[] = new long[realAddresses.length * 2];
-            System.arraycopy(realAddresses, 0, newAddressTable, 0, realAddresses.length);
-            realAddresses = newAddressTable;
-        }
+//        if (newBucketBufferId >= realAddresses.length)
+//        {
+//            final long newAddressTable[] = new long[realAddresses.length * 2];
+//            System.arraycopy(realAddresses, 0, newAddressTable, 0, realAddresses.length);
+//            realAddresses = newAddressTable;
+//        }
+//
+//        capacity += maxBucketBufferLength;
+//        realAddresses[newBucketBufferId] =
+//            allocateNewBucketBuffer(bucketBufferHeaderAddress, maxBucketBufferLength, maxBucketLength);
 
-        capacity += maxBucketBufferLength;
-        realAddresses[newBucketBufferId] =
-            allocateNewBucketBuffer(bucketBufferHeaderAddress, maxBucketBufferLength, maxBucketLength);
+        allocateNewBucketBuffer(instanceAddress, newBucketBufferId);
     }
 
-    private native long allocateNewBucketBuffer(long mainBucketBufferAddress,
-                                                long maxBucketBufferLength, int maxBucketLength);
+    private native void allocateNewBucketBuffer(long instanceAddress, int newBucketBufferID);
 
 
     // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
-
-    protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
-    {
-        long bucketAddress = 0;
-        bucketAddress += (long) bucketBufferId << 32;
-        bucketAddress += bucketOffset;
-        return bucketAddress;
-    }
-
-    private long getRealAddress(final long bucketAddress)
-    {
-        final int bucketBufferId = (int) (bucketAddress >> 32);
-        final int bucketOffset = (int) bucketAddress;
-        return getRealAddress(bucketBufferId, bucketOffset);
-    }
-
-    private long getRealAddress(int bucketBufferId, int offset)
-    {
-        if (offset < 0 || offset >= maxBucketBufferLength)
-        {
-            throw new IllegalArgumentException("Can't access " + offset + " max bucket buffer length is: " + maxBucketBufferLength);
-        }
-
-        return realAddresses[bucketBufferId] + offset;
-    }
+    
+//
+//    protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
+//    {
+//        long bucketAddress = 0;
+//        bucketAddress += (long) bucketBufferId << 32;
+//        bucketAddress += bucketOffset;
+//        return bucketAddress;
+//    }
+//
+//    private long getRealAddress(final long bucketAddress)
+//    {
+//        final int bucketBufferId = (int) (bucketAddress >> 32);
+//        final int bucketOffset = (int) bucketAddress;
+//        return getRealAddress(bucketBufferId, bucketOffset);
+//    }
+//
+//    private long getRealAddress(int bucketBufferId, int offset)
+//    {
+//        if (offset < 0 || offset >= maxBucketBufferLength)
+//        {
+//            throw new IllegalArgumentException("Can't access " + offset + " max bucket buffer length is: " + maxBucketBufferLength);
+//        }
+//
+//        return realAddresses[bucketBufferId] + offset;
+//    }
 
     private native int readInt(long address);
     private native long readLong(long address);
@@ -170,32 +139,45 @@ public class BucketBufferArray implements AutoCloseable
 //        UNSAFE.putLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET, newBlockCount);
 //    }
 //
+       
+    
     public int getBucketBufferCount()
     {
-        return readInt(bucketBufferHeaderAddress + MAIN_BUFFER_COUNT_OFFSET);
+//        return readInt(bucketBufferHeaderAddress + MAIN_BUFFER_COUNT_OFFSET);
+        return getBucketBufferCount(instanceAddress);
     }
+    
+    private native int getBucketBufferCount(long instanceAddress);
 
     public int getBucketCount()
     {
-        return readInt(bucketBufferHeaderAddress + MAIN_BUCKET_COUNT_OFFSET);
+//        return readInt(bucketBufferHeaderAddress + MAIN_BUCKET_COUNT_OFFSET);
+        return getBucketCount(instanceAddress);
     }
+    
+    private native int getBucketCount(long instanceAddress);
 
     public long getBlockCount()
     {
-        return readLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET);
+//        return readLong(bucketBufferHeaderAddress + MAIN_BLOCK_COUNT_OFFSET);
+        return getBlockCount(instanceAddress);
     }
+    
+    private native long getBlockCount(long instanceAddress);
+    
+    
 //
     @Override
     public void close()
     {
-        free(bucketBufferHeaderAddress);
-        for (long realAddress : realAddresses)
-        {
-            if (realAddress != INVALID_ADDRESS)
-            {
-                free(realAddress);
-            }
-        }
+//        free(bucketBufferHeaderAddress);
+//        for (long realAddress : realAddresses)
+//        {
+//            if (realAddress != INVALID_ADDRESS)
+//            {
+//                free(realAddress);
+//            }
+//        }
     }
 //
 //    public int getFirstBucketOffset()
@@ -205,8 +187,10 @@ public class BucketBufferArray implements AutoCloseable
 
     public long getCapacity()
     {
-        return capacity;
+        return getCapacity(instanceAddress);
     }
+    
+    private native long getCapacity(long instanceAddress);
 
     protected long getCountOfUsedBytes()
     {
@@ -214,38 +198,45 @@ public class BucketBufferArray implements AutoCloseable
     }
 
     protected native long getCountOfUsedBytes(long instanceAddress);
-//    {
-//        return countOfUsedBytes;
-//    }
-
+        
+//
     public long size()
     {
-        return MAIN_BUCKET_BUFFER_HEADER_LEN + countOfUsedBytes;
+//        return MAIN_BUCKET_BUFFER_HEADER_LEN + countOfUsedBytes;
+        return size(instanceAddress);
     }
-
+    
+    private native long size(long instanceAddress);
+//
     public int getMaxBucketBufferLength()
     {
-        return maxBucketBufferLength;
+//        return maxBucketBufferLength;
+        return getMaxBucketBufferLength(instanceAddress);
     }
-
+    
+    private native int getMaxBucketBufferLength(long instanceAddress);
+//
     public float getLoadFactor()
     {
-        return getLoadFactor(bucketBufferHeaderAddress, maxBucketBlockCount);
+        return getLoadFactor(instanceAddress);
     }
 
-    public native float getLoadFactor(long bucketBufferHeaderAddress, int maxBucketBlockCount);
-
+    private native float getLoadFactor(long instanceAddress);
+//
     public int getMaxBucketLength()
     {
-        return maxBucketLength;
+        return getMaxBucketLength(instanceAddress);
     }
+    
+    private native int getMaxBucketLength(long instanceAddress);
+//    
 
     // BUCKET BUFFER ///////////////////////////////////////////////////////////////
-
-    public int getBucketCount(int bucketBufferId)
-    {
-        return readInt(getRealAddress(bucketBufferId, BUCKET_BUFFER_BUCKET_COUNT_OFFSET));
-    }
+//
+//    public int getBucketCount(int bucketBufferId)
+//    {
+//        return readInt(getRealAddress(bucketBufferId, BUCKET_BUFFER_BUCKET_COUNT_OFFSET));
+//    }
 //
 //    private void setBucketCount(int bucketBufferId, int blockCount)
 //    {
@@ -437,21 +428,21 @@ public class BucketBufferArray implements AutoCloseable
      */
     public long allocateNewBucket(int newBucketId, int newBucketDepth)
     {
-        long newUsed = countOfUsedBytes + maxBucketLength;
-        int bucketBufferId = getBucketBufferCount() - 1;
-        int bucketCountInBucketBuffer = getBucketCount(bucketBufferId);
-
-        if (bucketCountInBucketBuffer >= ALLOCATION_FACTOR)
-        {
-            allocateNewBucketBuffer(++bucketBufferId);
-            bucketCountInBucketBuffer = 0;
-            newUsed += BUCKET_BUFFER_HEADER_LENGTH;
-        }
-
-        final int bucketOffset = BUCKET_BUFFER_HEADER_LENGTH + bucketCountInBucketBuffer * maxBucketLength;
-        final long bucketAddress = getBucketAddress(bucketBufferId, bucketOffset);
-
-        countOfUsedBytes = newUsed;
+//        long newUsed = countOfUsedBytes + maxBucketLength;
+//        int bucketBufferId = getBucketBufferCount() - 1;
+//        int bucketCountInBucketBuffer = getBucketCount(bucketBufferId);
+//
+//        if (bucketCountInBucketBuffer >= ALLOCATION_FACTOR)
+//        {
+//            allocateNewBucketBuffer(++bucketBufferId);
+//            bucketCountInBucketBuffer = 0;
+//            newUsed += BUCKET_BUFFER_HEADER_LENGTH;
+//        }
+//
+//        final int bucketOffset = BUCKET_BUFFER_HEADER_LENGTH + bucketCountInBucketBuffer * maxBucketLength;
+//        final long bucketAddress = getBucketAddress(bucketBufferId, bucketOffset);
+//
+//        countOfUsedBytes = newUsed;
 
         // low level
 
@@ -461,13 +452,16 @@ public class BucketBufferArray implements AutoCloseable
 //
 //        setBucketCount(bucketBufferId, bucketCountInBucketBuffer + 1);
 //        setBucketCount(getBucketCount() + 1);
-        allocateNewBucket(bucketBufferHeaderAddress, realAddresses[bucketBufferId], bucketOffset, newBucketId, newBucketDepth);
 
-        return bucketAddress;
+
+//        allocateNewBucket(bucketBufferHeaderAddress, realAddresses[bucketBufferId], bucketOffset, newBucketId, newBucketDepth);
+
+//        return bucketAddress;
+        
+        return allocateNewBucket(instanceAddress, newBucketId, newBucketDepth);
     }
 
-    private native void allocateNewBucket(long bucketBufferHeaderAddress, long bucketBufferAddress, int bucketOffset,
-                                          int newBucketId, int newBucketDepth);
+    private native long allocateNewBucket(long instanceAddress, int newBucketId, int newBucketDepth);
 
 //    public void relocateBlock(long bucketAddress, int blockOffset, long newBucketAddress)
 //    {
