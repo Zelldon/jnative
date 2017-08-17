@@ -397,10 +397,10 @@ public class BucketBufferArrayTest
 
         // then
         assertThat(wasAdded).isFalse();
-//        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(1);
-//        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + 2 * getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(2);
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(2);
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(1);
+        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + 2 * getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(2);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(2);
     }
 
 //    @Test
