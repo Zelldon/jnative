@@ -103,6 +103,10 @@ public class BucketBufferArray implements AutoCloseable
         bucketAddress += bucketOffset;
         return bucketAddress;
     }
+    
+//    public native void test(long bucketAddress);
+    
+    
 //
 //    private long getRealAddress(final long bucketAddress)
 //    {

@@ -230,40 +230,55 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getBucketLength(firstBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
         assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
     }
-
+//    
 //    @Test
-//    public void shouldAllocateNewBucketBufferOnCreatingBuckets()
+//    public void shouldTest()
 //    {
-//        // given
-//        for (int i = 0; i < ALLOCATION_FACTOR; i++)
+//        for (int j = 0; j < 10; j++)
 //        {
-//            bucketBufferArray.allocateNewBucket(i, i);
+//            for (int i = 0; i < ALLOCATION_FACTOR; i++)
+//            {
+//                final long bucketAddress = getBucketAddress(j, BUCKET_BUFFER_HEADER_LENGTH + i * bucketBufferArray.getMaxBucketBufferLength());
+//                bucketBufferArray.test(bucketAddress);
+//            }
+//            
 //        }
-//
-//        // when
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(0xFF, 0xFF);
+//        
+//    }
+
+    @Test
+    public void shouldAllocateNewBucketBufferOnCreatingBuckets()
+    {
+        // given
+        for (int i = 0; i < ALLOCATION_FACTOR; i++)
+        {
+            bucketBufferArray.allocateNewBucket(i, i);
+        }
+
+        // when
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(0xFF, 0xFF);
 //
 //        // then
-//        assertThat(newBucketAddress).isEqualTo(getBucketAddress(1, BUCKET_BUFFER_HEADER_LENGTH));
-//
-//        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(ALLOCATION_FACTOR + 1);
-//        assertThat(bucketBufferArray.getCapacity()).isEqualTo(bucketBufferArray.getMaxBucketBufferLength() * 2);
-//
-//        final int firstBucketAddress = bucketBufferArray.getFirstBucketOffset();
-//        for (int i = 0; i < ALLOCATION_FACTOR; i++)
-//        {
-//            final int bucketOffset = firstBucketAddress + i * bucketBufferArray.getMaxBucketLength();
-//            final long bucketAddress = BucketBufferArray.getBucketAddress(0, bucketOffset);
-//
-//            assertThat(bucketBufferArray.getBucketDepth(bucketAddress)).isEqualTo(i);
-//            assertThat(bucketBufferArray.getBucketId(bucketAddress)).isEqualTo(i);
-//            assertThat(bucketBufferArray.getBucketLength(bucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
-//        }
-//        assertThat(bucketBufferArray.getBucketDepth(newBucketAddress)).isEqualTo(0xFF);
-//        assertThat(bucketBufferArray.getBucketId(newBucketAddress)).isEqualTo(0xFF);
-//        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
-//    }
+        assertThat(newBucketAddress).isEqualTo(getBucketAddress(1, BUCKET_BUFFER_HEADER_LENGTH));
+        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(2);
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(ALLOCATION_FACTOR + 1);
+        assertThat(bucketBufferArray.getCapacity()).isEqualTo(bucketBufferArray.getMaxBucketBufferLength() * 2);
+
+        final int firstBucketAddress = bucketBufferArray.getFirstBucketOffset();
+        for (int i = 0; i < ALLOCATION_FACTOR; i++)
+        {
+            final int bucketOffset = firstBucketAddress + i * bucketBufferArray.getMaxBucketLength();
+            final long bucketAddress = BucketBufferArray.getBucketAddress(0, bucketOffset);
+
+            assertThat(bucketBufferArray.getBucketDepth(bucketAddress)).isEqualTo(i);
+            assertThat(bucketBufferArray.getBucketId(bucketAddress)).isEqualTo(i);
+            assertThat(bucketBufferArray.getBucketLength(bucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
+        }
+        assertThat(bucketBufferArray.getBucketDepth(newBucketAddress)).isEqualTo(0xFF);
+        assertThat(bucketBufferArray.getBucketId(newBucketAddress)).isEqualTo(0xFF);
+        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
+    }
 //
 //    @Test
 //    public void shouldIncreaseAddressArrayOnCreatingBuckets()

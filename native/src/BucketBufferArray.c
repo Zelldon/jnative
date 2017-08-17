@@ -42,10 +42,10 @@ void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int ne
     int realAddressesLength = sizeof (bucketBufferArray->realAddresses) / sizeof (bucketBufferArray->realAddresses[0]);
     if (newBucketBufferId >= realAddressesLength) {
         // todo check
-        void* *newAddressTable = malloc(realAddressesLength * 2);
-        memcpy(newAddressTable, bucketBufferArray->realAddresses, realAddressesLength);
-        free(bucketBufferArray->realAddresses);
-        bucketBufferArray->realAddresses = newAddressTable;
+//        void* *newAddressTable = malloc(realAddressesLength * 2);
+//        memcpy(newAddressTable, bucketBufferArray->realAddresses, realAddressesLength);
+//        free(bucketBufferArray->realAddresses);
+//        bucketBufferArray->realAddresses = newAddressTable;
     }
 
     // realAddresses[newBucketBufferId] = UNSAFE.allocateMemory(maxBucketBufferLength);
@@ -100,6 +100,22 @@ int64_t getBucketAddress(JNIEnv *env, struct BucketBufferArray* bucketBufferArra
     int32_t bucketOffset = (int32_t) bucketAddress;
     return getRealAddress(env, bucketBufferArray, bucketBufferId, bucketOffset);
 }
+
+
+///*
+// * Class:     de_zell_jnative_BucketBufferArray
+// * Method:    test
+// * Signature: (J)V
+// */
+//JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_test
+//  (JNIEnv *env, jobject obj, jlong addr)
+//{
+//    int32_t bucketBufferId = (int32_t) (addr >> 32);
+//    int32_t bucketOffset = (int32_t) addr;
+//    
+//    printf("BufferID %d - bucket offset %d", bucketBufferId, bucketOffset);
+//}
+
 
 int64_t getBucketWrappedAddress(int32_t bucketBufferId, int32_t bucketOffset)
 {
