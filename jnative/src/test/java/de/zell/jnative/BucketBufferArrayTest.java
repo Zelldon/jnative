@@ -22,6 +22,7 @@ import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_BUFFER_HEADER_LENG
 import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
 import static io.zeebe.map.BucketBufferArrayDescriptor.MAIN_BUCKET_BUFFER_HEADER_LEN;
 import static io.zeebe.map.BucketBufferArrayDescriptor.getBlockLength;
+import io.zeebe.map.types.LongKeyHandler;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -539,94 +540,101 @@ public class BucketBufferArrayTest
         bucketBufferArray.updateValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
     }
     
-//
-//    @Test
-//    public void shouldRelocateBlock()
-//    {
-//        // given
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final LongValueHandler valueHandler = new LongValueHandler();
-//        final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(2, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = 0xFF;
-//        bucketBufferArray.addBlock(firstBucketAddress, keyHandler, valueHandler);
-//        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // when
-//        bucketBufferArray.relocateBlock(firstBucketAddress, newBlockOffset, newBucketAddress);
-//
-//        // then
-//        assertThat(bucketBufferArray.getBucketLength(firstBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
-//        assertThat(bucketBufferArray.getBucketFillCount(firstBucketAddress)).isEqualTo(0);
-//
-//        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(1);
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(1);
-//
-//        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        final boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(10);
-//
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo(0xFF);
-//    }
-//
-//    @Test
-//    public void shouldRelocateBlockToBucketWhichIsHalfFull()
-//    {
-//        // given
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final LongValueHandler valueHandler = new LongValueHandler();
-//        final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = 0xFF;
-//        bucketBufferArray.addBlock(firstBucketAddress, keyHandler, valueHandler);
-//        keyHandler.theKey = 11;
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // when
-//        bucketBufferArray.relocateBlock(firstBucketAddress, newBlockOffset, newBucketAddress);
-//
-//        // then
-//        assertThat(bucketBufferArray.getBucketLength(firstBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
-//        assertThat(bucketBufferArray.getBucketFillCount(firstBucketAddress)).isEqualTo(0);
-//
-//        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + 2 * getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(2);
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(2);
-//
-//        final int blockLength = bucketBufferArray.getBlockLength();
-//        assertThat(blockLength).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(11);
-//
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo(0xFF);
-//
-//        newBlockOffset += blockLength;
-//        assertThat(blockLength).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        keyHandler.theKey = 10;
-//        keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(10);
-//
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo(0xFF);
-//    }
+    @Test
+    public void shouldRelocateBlock()
+    {
+        // given
+        final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(2, 1);        
+        
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        buffer.putLong(0, 10L);
+        buffer.putLong(MAX_KEY_LEN, 0xFF);
+        bucketBufferArray.addBlock(firstBucketAddress, buffer.byteArray());
+        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // when
+        bucketBufferArray.relocateBlock(firstBucketAddress, newBlockOffset, newBucketAddress);
+
+        // then
+        assertThat(bucketBufferArray.getBucketLength(firstBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
+        assertThat(bucketBufferArray.getBucketFillCount(firstBucketAddress)).isEqualTo(0);
+
+        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(1);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(1);
+
+        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        UnsafeBuffer keyBuffer = new UnsafeBuffer(new byte[MAX_KEY_LEN]);
+        keyBuffer.putLong(0, 10L);
+        final boolean keyEquals = bucketBufferArray.keyEquals(newBucketAddress, newBlockOffset, keyBuffer.byteArray());
+        assertThat(keyEquals).isTrue();
+
+        bucketBufferArray.readKey(newBucketAddress, newBlockOffset, keyBuffer.byteArray());
+        assertThat(keyBuffer.getLong(0)).isEqualTo(10);
+
+        UnsafeBuffer valueBuffer = new UnsafeBuffer(new byte[MAX_VALUE_LEN]);
+        bucketBufferArray.readValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
+        assertThat(valueBuffer.getLong(0)).isEqualTo(0xFF);
+    }
+
+    @Test
+    public void shouldRelocateBlockToBucketWhichIsHalfFull()
+    {
+        // given
+        final LongKeyHandler keyHandler = new LongKeyHandler();
+        final LongValueHandler valueHandler = new LongValueHandler();
+        final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
+        
+        
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        buffer.putLong(0, 10L);
+        buffer.putLong(MAX_KEY_LEN, 0xFF);
+        bucketBufferArray.addBlock(firstBucketAddress, keyHandler, valueHandler);
+        keyHandler.theKey = 11;
+        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
+        int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // when
+        bucketBufferArray.relocateBlock(firstBucketAddress, newBlockOffset, newBucketAddress);
+
+        // then
+        assertThat(bucketBufferArray.getBucketLength(firstBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
+        assertThat(bucketBufferArray.getBucketFillCount(firstBucketAddress)).isEqualTo(0);
+
+        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + 2 * getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(2);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(2);
+
+        final int blockLength = bucketBufferArray.getBlockLength();
+        assertThat(blockLength).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
+        assertThat(keyEquals).isTrue();
+
+        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
+        assertThat(keyHandler.theKey).isEqualTo(11);
+
+        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
+
+        newBlockOffset += blockLength;
+        assertThat(blockLength).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        keyHandler.theKey = 10;
+        keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
+        assertThat(keyEquals).isTrue();
+
+        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
+        assertThat(keyHandler.theKey).isEqualTo(10);
+
+        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
+    }
 //
 //    @Test
 //    public void shouldOverflowBucketOnRelocate()
@@ -733,65 +741,65 @@ public class BucketBufferArrayTest
 //    }
 //
 //
-//    @Test
-//    public void shouldAddBlockOnOverflowBucket()
-//    {
-//        // given
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        final long overflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final LongValueHandler valueHandler = new LongValueHandler();
+    @Test
+    public void shouldAddBlockOnOverflowBucket()
+    {
+        // given
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        final long overflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
+        final LongKeyHandler keyHandler = new LongKeyHandler();
+        final LongValueHandler valueHandler = new LongValueHandler();
+
+        // when
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
+        final boolean wasAdded = bucketBufferArray.addBlock(overflowBucketAddress, keyHandler, valueHandler);
+        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // then
+        assertThat(wasAdded).isTrue();
+        assertThat(newBlockOffset).isEqualTo(BUCKET_DATA_OFFSET);
+
+        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
+        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(0);
+
+        assertThat(bucketBufferArray.getBucketLength(overflowBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+        assertThat(bucketBufferArray.getBucketFillCount(overflowBucketAddress)).isEqualTo(1);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(1);
+
+        final boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, overflowBucketAddress, newBlockOffset);
+        assertThat(keyEquals).isTrue();
+
+        bucketBufferArray.readKey(keyHandler, overflowBucketAddress, newBlockOffset);
+        assertThat(keyHandler.theKey).isEqualTo(10);
+
+        bucketBufferArray.readValue(valueHandler, overflowBucketAddress, newBlockOffset);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
+    }
 //
-//        // when
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = 0xFF;
-//        final boolean wasAdded = bucketBufferArray.addBlock(overflowBucketAddress, keyHandler, valueHandler);
-//        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // then
-//        assertThat(wasAdded).isTrue();
-//        assertThat(newBlockOffset).isEqualTo(BUCKET_DATA_OFFSET);
-//
-//        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
-//        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(0);
-//
-//        assertThat(bucketBufferArray.getBucketLength(overflowBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//        assertThat(bucketBufferArray.getBucketFillCount(overflowBucketAddress)).isEqualTo(1);
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(1);
-//
-//        final boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, overflowBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//
-//        bucketBufferArray.readKey(keyHandler, overflowBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(10);
-//
-//        bucketBufferArray.readValue(valueHandler, overflowBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo(0xFF);
-//    }
-//
-//    @Test
-//    public void shouldOverflowOverflowBucket()
-//    {
-//        // given
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        final long overflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
-//
-//        // when
-//        final long newOverflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
-//
-//        // then
-//        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(3);
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
-//        assertThat(bucketBufferArray.getBucketOverflowPointer(newBucketAddress)).isEqualTo(overflowBucketAddress);
-//
-//        assertThat(bucketBufferArray.getBucketDepth(overflowBucketAddress)).isEqualTo(0);
-//        assertThat(bucketBufferArray.getBucketId(overflowBucketAddress)).isEqualTo(BucketBufferArray.OVERFLOW_BUCKET_ID);
-//        assertThat(bucketBufferArray.getBucketOverflowPointer(overflowBucketAddress)).isEqualTo(newOverflowBucketAddress);
-//
-//        assertThat(bucketBufferArray.getBucketDepth(newOverflowBucketAddress)).isEqualTo(0);
-//        assertThat(bucketBufferArray.getBucketId(newOverflowBucketAddress)).isEqualTo(BucketBufferArray.OVERFLOW_BUCKET_ID);
-//        assertThat(bucketBufferArray.getBucketOverflowPointer(newOverflowBucketAddress)).isEqualTo(0);
-//    }
+    @Test
+    public void shouldOverflowOverflowBucket()
+    {
+        // given
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        final long overflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
+
+        // when
+        final long newOverflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
+
+        // then
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(3);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
+        assertThat(bucketBufferArray.getBucketOverflowPointer(newBucketAddress)).isEqualTo(overflowBucketAddress);
+
+        assertThat(bucketBufferArray.getBucketDepth(overflowBucketAddress)).isEqualTo(0);
+        assertThat(bucketBufferArray.getBucketId(overflowBucketAddress)).isEqualTo(BucketBufferArray.OVERFLOW_BUCKET_ID);
+        assertThat(bucketBufferArray.getBucketOverflowPointer(overflowBucketAddress)).isEqualTo(newOverflowBucketAddress);
+
+        assertThat(bucketBufferArray.getBucketDepth(newOverflowBucketAddress)).isEqualTo(0);
+        assertThat(bucketBufferArray.getBucketId(newOverflowBucketAddress)).isEqualTo(BucketBufferArray.OVERFLOW_BUCKET_ID);
+        assertThat(bucketBufferArray.getBucketOverflowPointer(newOverflowBucketAddress)).isEqualTo(0);
+    }
 //
 //    @Test
 //    public void shouldCalculateOverflowBucketCount()

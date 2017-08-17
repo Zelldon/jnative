@@ -32,7 +32,7 @@ public class BucketBufferArray implements AutoCloseable
     }
 
     public static final int ALLOCATION_FACTOR = 32;
-//    public static final int OVERFLOW_BUCKET_ID = -1;
+    public static final int OVERFLOW_BUCKET_ID = -1;
 //    private static final long INVALID_ADDRESS = 0;
 
     private static final String FAIL_MSG_TO_READ_BUCKET_BUFFER = "Failed to read bucket buffer array, managed to read %d bytes.";
@@ -351,32 +351,6 @@ public class BucketBufferArray implements AutoCloseable
 //
     public boolean addBlock(long bucketAddress, byte[] blockContent)
     {
-//        final int bucketFillCount = getBucketFillCount(bucketAddress);
-//        final boolean canAddRecord = bucketFillCount < maxBucketBlockCount;
-//
-//        if (canAddRecord)
-//        {
-//            final int blockOffset = getBucketLength(bucketAddress);
-//            final int blockLength = BucketBufferArrayDescriptor.getBlockLength(maxKeyLength, maxValueLength);
-//
-//            final long blockAddress = getRealAddress(bucketAddress) + blockOffset;
-//
-//            keyHandler.writeKey(blockAddress + BLOCK_KEY_OFFSET);
-//            valueHandler.writeValue(getBlockValueOffset(blockAddress, maxKeyLength));
-//
-//            setBucketFillCount(bucketAddress, bucketFillCount + 1);
-//            setBlockCount(getBlockCount() + 1);
-//        }
-//        else
-//        {
-//            final long overflowBucketAddress = getBucketOverflowPointer(bucketAddress);
-//            if (overflowBucketAddress > 0)
-//            {
-//                return addBlock(overflowBucketAddress, keyHandler, valueHandler);
-//            }
-//        }
-//
-//        return canAddRecord;
         return addBlock(instanceAddress, bucketAddress, blockContent);
     }
     
@@ -384,22 +358,12 @@ public class BucketBufferArray implements AutoCloseable
 //
     public void removeBlock(long bucketAddress, int blockOffset)
     {
-//        removeBlockFromBucket(bucketAddress, blockOffset);
-//        setBlockCount(getBlockCount() - 1);
         removeBlock(instanceAddress, bucketAddress, blockOffset);
     }
     
     private native void removeBlock(long instanceAddress, long bucketAddress, int blockOffset);
-//
     private native void removeBlockFromBucket(long instanceAddress, long bucketAddress, int blockOffset);
-//    {
-//        final int blockLength = getBlockLength();
-//        final int nextBlockOffset = blockOffset + blockLength;
-//
-//        moveRemainingMemory(bucketAddress, nextBlockOffset, -blockLength);
-//
-//        setBucketFillCount(bucketAddress, getBucketFillCount(bucketAddress) - 1);
-//    }
+
     
     
 //
@@ -435,8 +399,8 @@ public class BucketBufferArray implements AutoCloseable
     
     private native int getBucketDepth(long instanceAddress, long bucketAddress);
 //
-//    public long overflow(long bucketAddress)
-//    {
+    public long overflow(long bucketAddress)
+    {
 //        final long currentOverflowBucketAddress = getBucketOverflowPointer(bucketAddress);
 //        if (currentOverflowBucketAddress > 0)
 //        {
@@ -448,8 +412,11 @@ public class BucketBufferArray implements AutoCloseable
 //            setBucketOverflowPointer(bucketAddress, overflowBucketAddress);
 //            return overflowBucketAddress;
 //        }
-//    }
-//
+        return overflow(instanceAddress, bucketAddress);
+    }
+    
+    private native long overflow(long instanceAddress, long bucketAddress);
+    
     /**
      * Allocates new bucket and returns the bucket start address.
      *
@@ -464,8 +431,8 @@ public class BucketBufferArray implements AutoCloseable
 
     private native long allocateNewBucket(long instanceAddress, int newBucketId, int newBucketDepth);
 
-//    public void relocateBlock(long bucketAddress, int blockOffset, long newBucketAddress)
-//    {
+    public void relocateBlock(long bucketAddress, int blockOffset, long newBucketAddress)
+    {
 //        final int destBucketFillCount = getBucketFillCount(newBucketAddress);
 //
 //        if (destBucketFillCount >= maxBucketBlockCount)
@@ -491,7 +458,10 @@ public class BucketBufferArray implements AutoCloseable
 //
 //            // TODO remove overflow buckets
 //        }
-//    }
+        relocateBlock(instanceAddress, bucketAddress, blockOffset, newBucketAddress);
+    }
+    
+    private native void relocateBlock(long instanceAddress, long bucketAddress, int blockOffset, long newBucketAddress);
 
 
 

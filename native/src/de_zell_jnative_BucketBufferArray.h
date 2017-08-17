@@ -9,6 +9,8 @@ extern "C" {
 #endif
 #undef de_zell_jnative_BucketBufferArray_ALLOCATION_FACTOR
 #define de_zell_jnative_BucketBufferArray_ALLOCATION_FACTOR 32L
+#undef de_zell_jnative_BucketBufferArray_OVERFLOW_BUCKET_ID
+#define de_zell_jnative_BucketBufferArray_OVERFLOW_BUCKET_ID -1L
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    createInstance
@@ -187,11 +189,27 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketDepth
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    overflow
+ * Signature: (JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_overflow
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    allocateNewBucket
  * Signature: (JII)J
  */
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
   (JNIEnv *, jobject, jlong, jint, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    relocateBlock
+ * Signature: (JJIJ)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_relocateBlock
+  (JNIEnv *, jobject, jlong, jlong, jint, jlong);
 
 #ifdef __cplusplus
 }
