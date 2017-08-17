@@ -37,15 +37,24 @@ void allocateBucketBufferHeader(struct BucketBufferArray* bucketBufferArray) {
     serialize_int64(bucketBufferHeader + MAIN_BLOCK_COUNT_OFFSET, 0L);
 }
 
-void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int newBucketBufferId) {
+int32_t getBucketBufferCount(struct BucketBufferArray* bucketBufferArray) {
+    int32_t value = 0;
+    deserialize_int32(bucketBufferArray->bucketBufferHeaderAddress + MAIN_BUFFER_COUNT_OFFSET, &value);
+    return value;
+}
 
-    int realAddressesLength = sizeof (bucketBufferArray->realAddresses) / sizeof (bucketBufferArray->realAddresses[0]);
-    if (newBucketBufferId >= realAddressesLength) {
-        // todo check
-//        void* *newAddressTable = malloc(realAddressesLength * 2);
-//        memcpy(newAddressTable, bucketBufferArray->realAddresses, realAddressesLength);
-//        free(bucketBufferArray->realAddresses);
-//        bucketBufferArray->realAddresses = newAddressTable;
+void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int newBucketBufferId) {
+    
+    // ALLOCATION FACTOR have to be power of two
+    int32_t mod = newBucketBufferId & (ALLOCATION_FACTOR - 1);
+    if (newBucketBufferId != 0 && mod == 0)
+    {
+        int32_t bucketBufferCount = getBucketBufferCount(bucketBufferArray);
+        void **newAddressTable = malloc((bucketBufferCount + ALLOCATION_FACTOR) * sizeof (void*));
+        memcpy(newAddressTable, bucketBufferArray->realAddresses, bucketBufferCount);
+        free(bucketBufferArray->realAddresses);
+        bucketBufferArray->realAddresses = newAddressTable;
+        
     }
 
     // realAddresses[newBucketBufferId] = UNSAFE.allocateMemory(maxBucketBufferLength);
@@ -71,11 +80,6 @@ void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int ne
     serialize_int32(address, count + 1);
 }
 
-int32_t getBucketBufferCount(struct BucketBufferArray* bucketBufferArray) {
-    int32_t value = 0;
-    deserialize_int32(bucketBufferArray->bucketBufferHeaderAddress + MAIN_BUFFER_COUNT_OFFSET, &value);
-    return value;
-}
 
 int32_t getBucketCount(struct BucketBufferArray* bucketBufferArray, int32_t bucketBufferId) {
     int32_t value = 0;

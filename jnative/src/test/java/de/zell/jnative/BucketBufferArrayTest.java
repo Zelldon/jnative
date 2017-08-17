@@ -279,27 +279,28 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
         assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
     }
-//
-//    @Test
-//    public void shouldIncreaseAddressArrayOnCreatingBuckets()
-//    {
-//        // given
-//        // default address array is 32 - so in the begin we can create 32 bucket buffers after that the
-//        // array will be doubled
-//        for (int i = 0; i < 32 * 32; i++)
-//        {
-//            bucketBufferArray.allocateNewBucket(i, i);
-//        }
-//
-//        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(32);
-//
-//        // when
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(0xFF, 0xFF);
-//
-//        // then address array is increased so we can create new bucket buffer
-//        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(33);
-//        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(32 * 32 + 1);
-//    }
+
+    @Test
+    public void shouldIncreaseAddressArrayOnCreatingBuckets()
+    {
+        // given
+        // default address array is 32 - so in the begin we can create 32 bucket buffers after that the
+        // array will be doubled
+        for (int i = 0; i < 32 * 32; i++)
+        {
+            bucketBufferArray.allocateNewBucket(i, i);
+        }
+
+        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(32);
+
+        // when
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(0xFF, 0xFF);
+
+        // then address array is increased so we can create new bucket buffer
+        assertThat(newBucketAddress).isEqualTo(getBucketAddress(32, BUCKET_BUFFER_HEADER_LENGTH));
+        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(33);
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(32 * 32 + 1);
+    }
 
     @Test
     public void shouldClearBucketArray()
