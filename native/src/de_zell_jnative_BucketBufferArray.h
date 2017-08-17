@@ -11,22 +11,6 @@ extern "C" {
 #define de_zell_jnative_BucketBufferArray_ALLOCATION_FACTOR 32L
 /*
  * Class:     de_zell_jnative_BucketBufferArray
- * Method:    allocate
- * Signature: (J)J
- */
-JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocate
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    free
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_free
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
  * Method:    createInstance
  * Signature: (IIIII)J
  */
@@ -48,22 +32,6 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_clearInternal
  */
 JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucketBuffer
   (JNIEnv *, jobject, jlong, jint);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readInt
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_readInt
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readLong
- * Signature: (J)J
- */
-JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
-  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -123,14 +91,6 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_size
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
- * Method:    getMaxBucketBufferLength
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getMaxBucketBufferLength
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
  * Method:    getLoadFactor
  * Signature: (J)F
  */
@@ -139,11 +99,67 @@ JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
- * Method:    getMaxBucketLength
- * Signature: (J)I
+ * Method:    getBucketFillCount
+ * Signature: (JJ)I
  */
-JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getMaxBucketLength
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketFillCount
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketLength
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketLength
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    keyEquals
+ * Signature: (JJI[B)Z
+ */
+JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
+  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readKey
+ * Signature: (JJI[B)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readKey
+  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readValue
+ * Signature: (JJI[B)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
+  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    addBlock
+ * Signature: (JJ[B)Z
+ */
+JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
+  (JNIEnv *, jobject, jlong, jlong, jbyteArray);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketId
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketId
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketDepth
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketDepth
+  (JNIEnv *, jobject, jlong, jlong);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray

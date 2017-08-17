@@ -31,10 +31,6 @@ public class BucketBufferArray implements AutoCloseable
         System.loadLibrary("nativeMap");
     }
 
-    protected native long allocate(long size);
-
-    protected native void free(long address);
-
     public static final int ALLOCATION_FACTOR = 32;
 //    public static final int OVERFLOW_BUCKET_ID = -1;
 //    private static final long INVALID_ADDRESS = 0;
@@ -42,14 +38,17 @@ public class BucketBufferArray implements AutoCloseable
     private static final String FAIL_MSG_TO_READ_BUCKET_BUFFER = "Failed to read bucket buffer array, managed to read %d bytes.";
 
     private long instanceAddress;
+    private final int maxKeyLength;
+    private final int maxValueLength;
+    private final int maxBucketLength;
+    private final int maxBucketBufferLength;
 
     public BucketBufferArray(int maxBucketBlockCount, int maxKeyLength, int maxValueLength)
     {
-        final int maxBucketLength =
+        this.maxBucketLength =
             addExact(BUCKET_DATA_OFFSET,
                      multiplyExact(maxBucketBlockCount, BucketBufferArrayDescriptor.getBlockLength(maxKeyLength, maxValueLength)));
 
-        final int maxBucketBufferLength;
         try
         {
             maxBucketBufferLength = addExact(BUCKET_BUFFER_HEADER_LENGTH, multiplyExact(ALLOCATION_FACTOR, maxBucketLength));
@@ -58,6 +57,9 @@ public class BucketBufferArray implements AutoCloseable
         {
             throw new IllegalArgumentException("Maximum bucket buffer length exceeds integer maximum value.", ae);
         }
+        
+        this.maxKeyLength = maxKeyLength;
+        this.maxValueLength = maxValueLength;
 
         instanceAddress = createInstance(maxBucketLength, maxBucketBlockCount, maxKeyLength, maxValueLength, maxBucketBufferLength);
     }
@@ -94,13 +96,13 @@ public class BucketBufferArray implements AutoCloseable
     // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
     
 //
-//    protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
-//    {
-//        long bucketAddress = 0;
-//        bucketAddress += (long) bucketBufferId << 32;
-//        bucketAddress += bucketOffset;
-//        return bucketAddress;
-//    }
+    protected static long getBucketAddress(int bucketBufferId, int bucketOffset)
+    {
+        long bucketAddress = 0;
+        bucketAddress += (long) bucketBufferId << 32;
+        bucketAddress += bucketOffset;
+        return bucketAddress;
+    }
 //
 //    private long getRealAddress(final long bucketAddress)
 //    {
@@ -118,9 +120,6 @@ public class BucketBufferArray implements AutoCloseable
 //
 //        return realAddresses[bucketBufferId] + offset;
 //    }
-
-    private native int readInt(long address);
-    private native long readLong(long address);
 
 //
 //    private void setBucketBufferCount(int newBucketBufferCount)
@@ -178,10 +177,10 @@ public class BucketBufferArray implements AutoCloseable
     
     private native void closeInternal(long instanceAddress);
 //
-//    public int getFirstBucketOffset()
-//    {
-//        return BUCKET_BUFFER_HEADER_LENGTH;
-//    }
+    public int getFirstBucketOffset()
+    {
+        return BUCKET_BUFFER_HEADER_LENGTH;
+    }
 
     public long getCapacity()
     {
@@ -200,7 +199,6 @@ public class BucketBufferArray implements AutoCloseable
 //
     public long size()
     {
-//        return MAIN_BUCKET_BUFFER_HEADER_LEN + countOfUsedBytes;
         return size(instanceAddress);
     }
     
@@ -208,11 +206,8 @@ public class BucketBufferArray implements AutoCloseable
 //
     public int getMaxBucketBufferLength()
     {
-//        return maxBucketBufferLength;
-        return getMaxBucketBufferLength(instanceAddress);
-    }
-    
-    private native int getMaxBucketBufferLength(long instanceAddress);
+        return maxBucketBufferLength;
+    }    
 //
     public float getLoadFactor()
     {
@@ -223,10 +218,9 @@ public class BucketBufferArray implements AutoCloseable
 //
     public int getMaxBucketLength()
     {
-        return getMaxBucketLength(instanceAddress);
+        return maxBucketLength;
     }
     
-    private native int getMaxBucketLength(long instanceAddress);
 //    
 
     // BUCKET BUFFER ///////////////////////////////////////////////////////////////
@@ -244,10 +238,13 @@ public class BucketBufferArray implements AutoCloseable
 //
 //    // BUCKET //////////////////////////////////////////////////////////////////////
 //
-//    public int getBucketFillCount(long bucketAddress)
-//    {
+    public int getBucketFillCount(long bucketAddress)
+    {
 //        return UNSAFE.getInt(getRealAddress(bucketAddress) + BUCKET_FILL_COUNT_OFFSET);
-//    }
+        return getBucketFillCount(instanceAddress, bucketAddress);
+    }
+    
+    private native int getBucketFillCount(long instanceAddress, long bucketAddress);
 //
 //    private void initBucketFillCount(int bucketBufferId, int bucketOffset)
 //    {
@@ -259,10 +256,13 @@ public class BucketBufferArray implements AutoCloseable
 //        UNSAFE.putInt(getRealAddress(bucketAddress) + BUCKET_FILL_COUNT_OFFSET, blockFillCount);
 //    }
 //
-//    public int getBucketLength(long bucketAddress)
-//    {
+    public int getBucketLength(long bucketAddress)
+    {
 //        return getBucketFillCount(bucketAddress) * (maxKeyLength + maxValueLength) + BUCKET_HEADER_LENGTH;
-//    }
+        return getBucketLength(instanceAddress, bucketAddress);
+    }
+    
+    private native int getBucketLength(long instanceAddress, long bucketAddress);
 //
 //    public long getBucketOverflowPointer(long bucketAddress)
 //    {
@@ -291,33 +291,42 @@ public class BucketBufferArray implements AutoCloseable
 //        return count;
 //    }
 //
-//    public int getFirstBlockOffset()
-//    {
-//        return BUCKET_DATA_OFFSET;
-//    }
+    public int getFirstBlockOffset()
+    {
+        return BUCKET_DATA_OFFSET;
+    }
 //
 //    // BLOCK ///////////////////////////////////////////////////////////////////////////////////////////
 //
-//    public int getBlockLength()
-//    {
-//        return BucketBufferArrayDescriptor.getBlockLength(maxKeyLength, maxValueLength);
-//    }
+    public int getBlockLength()
+    {
+        return BucketBufferArrayDescriptor.getBlockLength(maxKeyLength, maxValueLength);
+    }
 //
-//    public boolean keyEquals(KeyHandler keyHandler, long bucketAddress, int blockOffset)
-//    {
+    public boolean keyEquals(long bucketAddress, int blockOffset, byte[] key)
+    {
 //        return keyHandler.keyEquals(getRealAddress(bucketAddress) + blockOffset + BLOCK_KEY_OFFSET);
-//    }
+        return keyEquals(instanceAddress, bucketAddress, blockOffset, key);
+    }
+    
+    private native boolean keyEquals(long instanceAddress, long bucketAddress, int blockOffset, byte[] key);
 //
-//    public void readKey(KeyHandler keyHandler, long bucketAddress, int blockOffset)
-//    {
+    public void readKey(long bucketAddress, int blockOffset, byte[] keyBuffer)
+    {
 //        keyHandler.readKey(getRealAddress(bucketAddress) + blockOffset + BLOCK_KEY_OFFSET);
-//    }
-//
-//    public void readValue(ValueHandler valueHandler, long bucketAddress, int blockOffset)
-//    {
+        readKey(instanceAddress, bucketAddress, blockOffset, keyBuffer);
+    }
+    
+    private native void readKey(long instanceAddress, long bucketAddress, int blockOffset, byte[] keyBuffer);
+
+    public void readValue(long bucketAddress, int blockOffset, byte[] valueBuffer)
+    {
 //        final long valueOffset = getBlockValueOffset(getRealAddress(bucketAddress) + blockOffset, maxKeyLength);
 //        valueHandler.readValue(valueOffset, maxValueLength);
-//    }
+        readValue(instanceAddress, bucketAddress, blockOffset, valueBuffer);
+    }
+    
+    private native void readValue(long instanceAddress, long bucketAddress, int blockOffset, byte[] valueBuffer);
 //
 //    public void updateValue(ValueHandler valueHandler, long bucketAddress, int blockOffset)
 //    {
@@ -331,8 +340,8 @@ public class BucketBufferArray implements AutoCloseable
 //        valueHandler.writeValue(getBlockValueOffset(blockAddress, maxKeyLength));
 //    }
 //
-//    public boolean addBlock(long bucketAddress, KeyHandler keyHandler, ValueHandler valueHandler)
-//    {
+    public boolean addBlock(long bucketAddress, byte[] blockContent)
+    {
 //        final int bucketFillCount = getBucketFillCount(bucketAddress);
 //        final boolean canAddRecord = bucketFillCount < maxBucketBlockCount;
 //
@@ -359,7 +368,10 @@ public class BucketBufferArray implements AutoCloseable
 //        }
 //
 //        return canAddRecord;
-//    }
+        return addBlock(instanceAddress, bucketAddress, blockContent);
+    }
+    
+    private native boolean addBlock(long instanceAddress, long bucketAddress, byte[] blockContent);
 //
 //    public void removeBlock(long bucketAddress, int blockOffset)
 //    {
@@ -382,10 +394,13 @@ public class BucketBufferArray implements AutoCloseable
 //        UNSAFE.putInt(getRealAddress(bucketBufferId, bucketOffset) + BUCKET_ID_OFFSET, newBlockId);
 //    }
 //
-//    public int getBucketId(long bucketAddress)
-//    {
+    public int getBucketId(long bucketAddress)
+    {
 //        return UNSAFE.getInt(getRealAddress(bucketAddress) + BUCKET_ID_OFFSET);
-//    }
+        return getBucketId(instanceAddress, bucketAddress);
+    }
+    
+    private native int getBucketId(long instanceAddress, long bucketAddress);
 //
 //    private void setBucketDepth(int bucketBufferId, int bucketOffset, int newBlockDepth)
 //    {
@@ -397,10 +412,14 @@ public class BucketBufferArray implements AutoCloseable
 //        UNSAFE.putInt(getRealAddress(bucketAddress) + BUCKET_DEPTH_OFFSET, newBlockDepth);
 //    }
 //
-//    public int getBucketDepth(long bucketAddress)
-//    {
+    
+    public int getBucketDepth(long bucketAddress)
+    {
 //        return UNSAFE.getInt(getRealAddress(bucketAddress) + BUCKET_DEPTH_OFFSET);
-//    }
+        return getBucketDepth(instanceAddress, bucketAddress);
+    }
+    
+    private native int getBucketDepth(long instanceAddress, long bucketAddress);
 //
 //    public long overflow(long bucketAddress)
 //    {
