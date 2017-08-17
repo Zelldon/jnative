@@ -42,6 +42,9 @@ void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int ne
     int32_t mod = newBucketBufferId & (ALLOCATION_FACTOR - 1);
     if (newBucketBufferId != 0 && mod == 0)
     {
+        printf("======\n");
+        printf("====Increase Addresses==\n");
+        printf("======\n");
         int32_t bucketBufferCount = getBucketBufferCount(bucketBufferArray);
         void **newAddressTable = malloc((bucketBufferCount + ALLOCATION_FACTOR) * sizeof (void*));
         memcpy(newAddressTable, bucketBufferArray->realAddresses, bucketBufferCount);
@@ -96,6 +99,8 @@ int64_t getBucketAddress(JNIEnv *env, struct BucketBufferArray* bucketBufferArra
 {
     int32_t bucketBufferId = (int32_t) (bucketAddress >> 32);
     int32_t bucketOffset = (int32_t) bucketAddress;
+    
+    printf("BucketAddress id: %d offset %d\n", bucketBufferId, bucketOffset);
     return getRealAddress(env, bucketBufferArray, bucketBufferId, bucketOffset);
 }
 
@@ -327,7 +332,7 @@ int32_t getBucketFillCount(struct BucketBufferArray* bucketBufferArray, uint8_t*
 {
     int32_t bucketFillCount = 0;
     deserialize_int32(bucketPtr + BUCKET_FILL_COUNT_OFFSET, &bucketFillCount);
-    
+    printf("Filld count: %d\n", bucketFillCount);
     return bucketFillCount;
 }
 
@@ -514,7 +519,7 @@ jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint
         deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
         if (overflowPtr != 0)
         {
-            addBlock(env, bucketBufferArray, overflowPtr, buffer);
+            return addBlock(env, bucketBufferArray, overflowPtr, buffer);
         }
     }
     
@@ -695,9 +700,8 @@ jlong overflow(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, jlong b
     else
     {
         int64_t overflowBucketAddress = allocateNewBucket(env, bucketBufferArray, de_zell_jnative_BucketBufferArray_OVERFLOW_BUCKET_ID, 0);
-        int64_t bucketAddress = getBucketAddress(env, bucketBufferArray, overflowBucketAddress);
         
-        serialize_int64((uint8_t*) bucketAddress + BUCKET_OVERFLOW_POINTER_OFFSET, 0L);
+        serialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, overflowBucketAddress);
         
         return overflowBucketAddress;
     }

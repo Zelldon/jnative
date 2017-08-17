@@ -13,170 +13,170 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-///*
-// * Copyright © 2017 Christopher Zell (zelldon91@gmail.com)
-// *
-// * Licensed under the Apache License, Version 2.0 (the "License");
-// * you may not use this file except in compliance with the License.
-// * You may obtain a copy of the License at
-// *
-// *     http://www.apache.org/licenses/LICENSE-2.0
-// *
-// * Unless required by applicable law or agreed to in writing, software
-// * distributed under the License is distributed on an "AS IS" BASIS,
-// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// * See the License for the specific language governing permissions and
-// * limitations under the License.
-// */
-//package de.zell.jnative;
+/*
+ * Copyright © 2017 Christopher Zell (zelldon91@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package de.zell.jnative;
+
+import de.zell.jnative.types.LongKeyHandler;
+import de.zell.jnative.types.LongValueHandler;
+import static io.zeebe.map.BucketBufferArray.ALLOCATION_FACTOR;
+import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
+import static io.zeebe.map.BucketBufferArrayDescriptor.getBlockLength;
+import io.zeebe.map.Bytes2LongZbMap;
+import io.zeebe.map.Long2BytesZbMap;
+import org.agrona.BitUtil;
+import static org.agrona.BitUtil.SIZE_OF_LONG;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+
+public class ZbMapTest
+{
+
+    public static final long KEY = Long.MAX_VALUE;
+    public static final long VALUE = Long.MAX_VALUE;
+    public static final long MISSING_VALUE = 0;
+    public static final int DATA_COUNT = 1024;
+
+    private ZbMap<LongKeyHandler, LongValueHandler> zbMap;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+    public static class EvenOddKeyHandler extends LongKeyHandler
+    {
+        @Override
+        public long keyHashCode()
+        {
+            return (int) getKey() & 1;
+        }
+    }
+
+    @After
+    public void tearDown()
+    {
+        if (zbMap != null)
+        {
+            zbMap.close();
+        }
+    }
+
+    public static void putValue(ZbMap<? extends LongKeyHandler, LongValueHandler> zbMap, long key, long value)
+    {
+        zbMap.keyHandler.setKey(key);
+        zbMap.valueHandler.setValue(value);
+        zbMap.put();
+    }
+
+    public static long getValue(ZbMap<LongKeyHandler, LongValueHandler> zbMap, long key, long missingValue)
+    {
+        zbMap.keyHandler.setKey(key);
+        zbMap.valueHandler.setValue(missingValue);
+        zbMap.get();
+        return zbMap.valueHandler.getValue();
+    }
+
+    @Test
+    public void shouldIncreaseHashTable()
+    {
+        // given
+        zbMap = new ZbMap<LongKeyHandler, LongValueHandler>(4, 2, SIZE_OF_LONG, SIZE_OF_LONG)
+        { };
+        assertThat(zbMap.getHashTableSize()).isEqualTo(4 * SIZE_OF_LONG);
+
+        // when
+        putValue(zbMap, 0, 1 << 0);
+        putValue(zbMap, 4, 1 << 1);
+
+            // split
+        putValue(zbMap, 7, 1 << 2);
+
+            // split
+        putValue(zbMap, 9, 1 << 3);
+
+            // split
+        putValue(zbMap, 11, 1 << 4);
+
+            // split & increase hash table
+        putValue(zbMap, 19, 1 << 5);
+
+        // then
+        assertThat(zbMap.getHashTableSize()).isEqualTo(8 * SIZE_OF_LONG);
+
+        assertThat(getValue(zbMap, 0, -1)).isEqualTo(1 << 0);
+        assertThat(getValue(zbMap, 4, -1)).isEqualTo(1 << 1);
+        assertThat(getValue(zbMap, 7, -1)).isEqualTo(1 << 2);
+        assertThat(getValue(zbMap, 9, -1)).isEqualTo(1 << 3);
+        assertThat(getValue(zbMap, 11, -1)).isEqualTo(1 << 4);
+        assertThat(getValue(zbMap, 19, -1)).isEqualTo(1 << 5);
+
+        // finally
+        zbMap.close();
+    }
 //
-//import de.zell.jnative.types.LongKeyHandler;
-//import de.zell.jnative.types.LongValueHandler;
-//import static io.zeebe.map.BucketBufferArray.ALLOCATION_FACTOR;
-//import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
-//import static io.zeebe.map.BucketBufferArrayDescriptor.getBlockLength;
-//import io.zeebe.map.Bytes2LongZbMap;
-//import io.zeebe.map.Long2BytesZbMap;
-//import org.agrona.BitUtil;
-//import static org.agrona.BitUtil.SIZE_OF_LONG;
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.assertj.core.api.Assertions.assertThatThrownBy;
-//import org.junit.After;
-//import org.junit.Rule;
-//import org.junit.Test;
-//import org.junit.rules.ExpectedException;
+    @Test
+    public void shouldPutNextPowerOfTwoForOddTableSize()
+    {
+        // given zbMap not power of two
+        final int tableSize = 3;
+
+        // when
+        zbMap = new ZbMap<LongKeyHandler, LongValueHandler>(tableSize, 2, SIZE_OF_LONG, SIZE_OF_LONG)
+        { };
+
+        // then zbMap size is set to next power of two
+        assertThat(zbMap.tableSize).isEqualTo(4);
+
+        // and a values can be inserted and read again - put many values to trigger resize
+        for (int i = 0; i < 16; i++)
+        {
+            putValue(zbMap, i, i);
+        }
+
+        for (int i = 0; i < 16; i++)
+        {
+            assertThat(getValue(zbMap, i, -1)).isEqualTo(i);
+        }
+    }
 //
-//
-//public class ZbMapTest
-//{
-//
-//    public static final long KEY = Long.MAX_VALUE;
-//    public static final long VALUE = Long.MAX_VALUE;
-//    public static final long MISSING_VALUE = 0;
-//    public static final int DATA_COUNT = 100_000;
-//
-//    private ZbMap<LongKeyHandler, LongValueHandler> zbMap;
-//
-//    @Rule
-//    public ExpectedException expectedException = ExpectedException.none();
-//
-//    public static class EvenOddKeyHandler extends LongKeyHandler
-//    {
-//        @Override
-//        public long keyHashCode()
-//        {
-//            return (int) getKey() & 1;
-//        }
-//    }
-//
-//    @After
-//    public void tearDown()
-//    {
-//        if (zbMap != null)
-//        {
-//            zbMap.close();
-//        }
-//    }
-//
-//    public static void putValue(ZbMap<? extends LongKeyHandler, LongValueHandler> zbMap, long key, long value)
-//    {
-//        zbMap.keyHandler.setKey(key);
-//        zbMap.valueHandler.setValue(value);
-//        zbMap.put();
-//    }
-//
-//    public static long getValue(ZbMap<LongKeyHandler, LongValueHandler> zbMap, long key, long missingValue)
-//    {
-//        zbMap.keyHandler.setKey(key);
-//        zbMap.valueHandler.setValue(missingValue);
-//        zbMap.get();
-//        return zbMap.valueHandler.getValue();
-//    }
-//
-//    @Test
-//    public void shouldIncreaseHashTable()
-//    {
-//        // given
-//        zbMap = new ZbMap<LongKeyHandler, LongValueHandler>(4, 2, SIZE_OF_LONG, SIZE_OF_LONG)
-//        { };
-//        assertThat(zbMap.getHashTableSize()).isEqualTo(4 * SIZE_OF_LONG);
-//
-//        // when
-//        putValue(zbMap, 0, 1 << 0);
-//        putValue(zbMap, 4, 1 << 1);
-//
-//            // split
-//        putValue(zbMap, 7, 1 << 2);
-//
-//            // split
-//        putValue(zbMap, 9, 1 << 3);
-//
-//            // split
-//        putValue(zbMap, 11, 1 << 4);
-//
-//            // split & increase hash table
-//        putValue(zbMap, 19, 1 << 5);
-//
-//        // then
-//        assertThat(zbMap.getHashTableSize()).isEqualTo(8 * SIZE_OF_LONG);
-//
-//        assertThat(getValue(zbMap, 0, -1)).isEqualTo(1 << 0);
-//        assertThat(getValue(zbMap, 4, -1)).isEqualTo(1 << 1);
-//        assertThat(getValue(zbMap, 7, -1)).isEqualTo(1 << 2);
-//        assertThat(getValue(zbMap, 9, -1)).isEqualTo(1 << 3);
-//        assertThat(getValue(zbMap, 11, -1)).isEqualTo(1 << 4);
-//        assertThat(getValue(zbMap, 19, -1)).isEqualTo(1 << 5);
-//
-//        // finally
-//        zbMap.close();
-//    }
-//
-//    @Test
-//    public void shouldPutNextPowerOfTwoForOddTableSize()
-//    {
-//        // given zbMap not power of two
-//        final int tableSize = 3;
-//
-//        // when
-//        zbMap = new ZbMap<LongKeyHandler, LongValueHandler>(tableSize, 2, SIZE_OF_LONG, SIZE_OF_LONG)
-//        { };
-//
-//        // then zbMap size is set to next power of two
-//        assertThat(zbMap.tableSize).isEqualTo(4);
-//
-//        // and a values can be inserted and read again - put many values to trigger resize
-//        for (int i = 0; i < 16; i++)
-//        {
-//            putValue(zbMap, i, i);
-//        }
-//
-//        for (int i = 0; i < 16; i++)
-//        {
-//            assertThat(getValue(zbMap, i, -1)).isEqualTo(i);
-//        }
-//    }
-//
-//    @Test
-//    public void shouldPutLargeBunchOfData()
-//    {
-//        // given
-//        zbMap = new ZbMap<LongKeyHandler, LongValueHandler>(4, 1, SIZE_OF_LONG, SIZE_OF_LONG)
-//        { };
-//
-//        // when
-//        for (int i = 0; i < DATA_COUNT; i++)
-//        {
-//            putValue(zbMap, i, i);
-//        }
-//
-//        // then
-//        assertThat(zbMap.getHashTableSize()).isEqualTo(BitUtil.findNextPositivePowerOfTwo(DATA_COUNT) * SIZE_OF_LONG);
-//
-//        for (int i = 0; i < DATA_COUNT; i++)
-//        {
-//            assertThat(getValue(zbMap, i, -1)).isEqualTo(i);
-//        }
-//    }
+    @Test
+    public void shouldPutLargeBunchOfData()
+    {
+        // given
+        zbMap = new ZbMap<LongKeyHandler, LongValueHandler>(4, 1, SIZE_OF_LONG, SIZE_OF_LONG)
+        { };
+
+        // when
+        for (int i = 0; i < DATA_COUNT; i++)
+        {
+            putValue(zbMap, i, i);
+        }
+
+        // then
+        assertThat(zbMap.getHashTableSize()).isEqualTo(BitUtil.findNextPositivePowerOfTwo(DATA_COUNT) * SIZE_OF_LONG);
+
+        for (int i = 0; i < DATA_COUNT; i++)
+        {
+            assertThat(getValue(zbMap, i, -1)).isEqualTo(i);
+        }
+    }
 //
 //    @Test
 //    public void shouldThrowExceptionIfTableSizeReachesDefaultMaxSize()
@@ -467,5 +467,5 @@
 //    {
 //        return (Integer.MAX_VALUE - BUCKET_DATA_OFFSET - BUCKET_DATA_OFFSET * ALLOCATION_FACTOR) / (getBlockLength(SIZE_OF_LONG, SIZE_OF_LONG) * ALLOCATION_FACTOR);
 //    }
-//
-//}
+
+}
