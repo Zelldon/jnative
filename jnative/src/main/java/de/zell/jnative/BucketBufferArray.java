@@ -41,7 +41,7 @@ public class BucketBufferArray implements AutoCloseable
 
     private static final String FAIL_MSG_TO_READ_BUCKET_BUFFER = "Failed to read bucket buffer array, managed to read %d bytes.";
 
-    private final long instanceAddress;
+    private long instanceAddress;
 
     public BucketBufferArray(int maxBucketBlockCount, int maxKeyLength, int maxValueLength)
     {
@@ -67,11 +67,10 @@ public class BucketBufferArray implements AutoCloseable
 
     public void clear()
     {
-        close();
-        clearInternal();
+        instanceAddress = clearInternal(instanceAddress);        
     }
 
-    private native void clearInternal();
+    private native long clearInternal(long instanceAddress);
 
     protected void allocateNewBucketBuffer(int newBucketBufferId)
     {
@@ -170,15 +169,14 @@ public class BucketBufferArray implements AutoCloseable
     @Override
     public void close()
     {
-//        free(bucketBufferHeaderAddress);
-//        for (long realAddress : realAddresses)
-//        {
-//            if (realAddress != INVALID_ADDRESS)
-//            {
-//                free(realAddress);
-//            }
-//        }
+        if (instanceAddress != 0)
+        {
+            closeInternal(instanceAddress);
+            instanceAddress = 0;            
+        }
     }
+    
+    private native void closeInternal(long instanceAddress);
 //
 //    public int getFirstBucketOffset()
 //    {

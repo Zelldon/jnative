@@ -36,10 +36,10 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_createInstance
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    clearInternal
- * Signature: ()V
+ * Signature: (J)J
  */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_clearInternal
-  (JNIEnv *, jobject);
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_clearInternal
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -87,6 +87,14 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketCount
  * Signature: (J)J
  */
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBlockCount
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    closeInternal
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_closeInternal
   (JNIEnv *, jobject, jlong);
 
 /*
