@@ -500,6 +500,67 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
     return addBlock(env, bucketBufferArray, bucketAddress, buffer);
 }
 
+void moveRemainingMemory(struct BucketBufferArray* bucketBufferArray, 
+        uint8_t* bucketPtr, int32_t srcOffset, int32_t moveBytes)
+    {
+        int32_t bucketLength = getBucketLength(bucketBufferArray, bucketPtr);
+
+        if (srcOffset < bucketLength)
+        {
+            uint8_t* srcAddress = bucketPtr + srcOffset;
+            int32_t remainingBytes = bucketLength - srcOffset;
+            
+            memcpy(srcAddress + moveBytes, srcAddress, remainingBytes);
+        }
+    }
+
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    removeBlock
+ * Signature: (JJI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlock
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset)
+{
+    
+//        final int blockLength = getBlockLength();
+//        final int nextBlockOffset = blockOffset + blockLength;
+//
+//        moveRemainingMemory(bucketAddress, nextBlockOffset, -blockLength);
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    
+    int32_t blockLength = bucketBufferArray->maxKeyLength + bucketBufferArray->maxValueLength;
+    int32_t nextBlockOffset = blockOffset + blockLength;
+    
+    moveRemainingMemory(bucketBufferArray, bucketPtr, nextBlockOffset, -blockLength);
+    
+    
+//        setBucketFillCount(bucketAddress, getBucketFillCount(bucketAddress) - 1);
+    int32_t bucketFillCount = getBucketFillCount(bucketBufferArray, bucketPtr);
+    serialize_int32((uint8_t*) bucketPtr + BUCKET_FILL_COUNT_OFFSET, bucketFillCount - 1);
+    
+//        setBlockCount(getBlockCount() - 1);
+    
+    uint8_t *mainBlockCountAddress = ((uint8_t*) bucketBufferArray->bucketBufferHeaderAddress) + MAIN_BLOCK_COUNT_OFFSET;
+    int32_t count = 0;
+    deserialize_int32(mainBlockCountAddress, &count);
+    serialize_int32(mainBlockCountAddress, count - 1);
+}
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    removeBlockFromBucket
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlockFromBucket
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset)
+{
+    
+}
+
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    getBucketId

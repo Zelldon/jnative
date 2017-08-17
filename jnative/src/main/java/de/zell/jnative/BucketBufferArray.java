@@ -377,13 +377,16 @@ public class BucketBufferArray implements AutoCloseable
     
     private native boolean addBlock(long instanceAddress, long bucketAddress, byte[] blockContent);
 //
-//    public void removeBlock(long bucketAddress, int blockOffset)
-//    {
+    public void removeBlock(long bucketAddress, int blockOffset)
+    {
 //        removeBlockFromBucket(bucketAddress, blockOffset);
 //        setBlockCount(getBlockCount() - 1);
-//    }
+        removeBlock(instanceAddress, bucketAddress, blockOffset);
+    }
+    
+    private native void removeBlock(long instanceAddress, long bucketAddress, int blockOffset);
 //
-//    private void removeBlockFromBucket(long bucketAddress, int blockOffset)
+    private native void removeBlockFromBucket(long instanceAddress, long bucketAddress, int blockOffset);
 //    {
 //        final int blockLength = getBlockLength();
 //        final int nextBlockOffset = blockOffset + blockLength;
@@ -392,6 +395,8 @@ public class BucketBufferArray implements AutoCloseable
 //
 //        setBucketFillCount(bucketAddress, getBucketFillCount(bucketAddress) - 1);
 //    }
+    
+    
 //
 //    private void setBucketId(int bucketBufferId, int bucketOffset, int newBlockId)
 //    {

@@ -147,6 +147,22 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    removeBlock
+ * Signature: (JJI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlock
+  (JNIEnv *, jobject, jlong, jlong, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    removeBlockFromBucket
+ * Signature: (JJI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlockFromBucket
+  (JNIEnv *, jobject, jlong, jlong, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    getBucketId
  * Signature: (JJ)I
  */
