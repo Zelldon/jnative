@@ -117,6 +117,14 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketLength
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketOverflowPointer
+ * Signature: (JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketOverflowPointer
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    keyEquals
  * Signature: (JJI[B)Z
  */
@@ -178,6 +186,14 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlockFromBuc
  */
 JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketId
   (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    setBucketDepth
+ * Signature: (JJI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_setBucketDepth
+  (JNIEnv *, jobject, jlong, jlong, jint);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray

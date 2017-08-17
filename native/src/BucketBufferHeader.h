@@ -26,7 +26,7 @@ struct BucketBufferArray {
     int maxValueLength;
     int maxBucketBufferLength;
 
-    void* *realAddresses;
+    void **realAddresses;
     void* bucketBufferHeaderAddress;
     long capacity;
 

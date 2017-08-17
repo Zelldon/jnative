@@ -368,6 +368,24 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketLength
     return getBucketLength(bucketBufferArray, bucketPtr);
 }
 
+
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketOverflowPointer
+ * Signature: (JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketOverflowPointer
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    int64_t overflowPtr = 0;
+    deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
+    return overflowPtr;
+}
+
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    keyEquals
@@ -586,6 +604,22 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketId
     
     return bucketId;
 }
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    setBucketDepth
+ * Signature: (JJI)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_setBucketDepth
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint newBucketDepth)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    
+    serialize_int32(bucketPtr + BUCKET_DEPTH_OFFSET, newBucketDepth);    
+}
+
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
