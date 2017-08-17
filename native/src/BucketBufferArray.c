@@ -440,6 +440,22 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
     (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, 0);    
 }
 
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_updateValue
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray buffer)
+{
+    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
+    jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
+    
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    jbyte* valuePtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
+            
+    memcpy(valuePtr, bufferPtr, lengthOfArray);    
+    
+    // mode == JNI_ABORT free the buffer without copying back the possible changes
+    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
+}
+
 
 jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress, jbyteArray buffer)
 {

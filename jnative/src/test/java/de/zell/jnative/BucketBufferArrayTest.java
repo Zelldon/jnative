@@ -25,14 +25,10 @@ import static io.zeebe.map.BucketBufferArrayDescriptor.getBlockLength;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.zeebe.map.types.ByteArrayValueHandler;
-import io.zeebe.map.types.LongKeyHandler;
-import io.zeebe.map.types.LongValueHandler;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.junit.Test;
@@ -385,148 +381,164 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getBlockCount()).isEqualTo(2);
     }
 
-//    @Test
-//    public void shouldUpdateBlockValue()
-//    {
-//        // given
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final LongValueHandler valueHandler = new LongValueHandler();
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = 0xFF;
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // when
-//        valueHandler.theValue = 0xAA;
-//        bucketBufferArray.updateValue(valueHandler, newBucketAddress, newBlockOffset);
-//
-//        // then
-//        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        final boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(10);
-//
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo(0xAA);
-//    }
-//
-//    @Test
-//    public void shouldUpdateBlockValueWithSmallerValue()
-//    {
-//        // given bucket array with 1 bucket and two blocks
-//        bucketBufferArray = new BucketBufferArray(MIN_BLOCK_COUNT, MAX_KEY_LEN, MAX_VALUE_LEN);
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final ByteArrayValueHandler valueHandler = new ByteArrayValueHandler();
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = "hallo".getBytes();
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        keyHandler.theKey = 11;
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // when
-//        valueHandler.theValue = "new".getBytes();
-//        bucketBufferArray.updateValue(valueHandler, newBucketAddress, newBlockOffset);
-//
-//        // then updated block
-//        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        keyHandler.theKey = 10;
-//        boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(10);
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo("new".getBytes());
-//
-//        // old block
-//        final int oldBlockOffset = newBlockOffset + bucketBufferArray.getBlockLength();
-//        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        keyHandler.theKey = 11;
-//        keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, oldBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, oldBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(11);
-//
-//        valueHandler.theValue = new byte[5];
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, oldBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo("hallo".getBytes());
-//    }
-//
-//    @Test
-//    public void shouldUpdateBlockValueWithLargerValue()
-//    {
-//        // given bucket array with 1 bucket and two blocks
-//        bucketBufferArray = new BucketBufferArray(MIN_BLOCK_COUNT, MAX_KEY_LEN, MAX_VALUE_LEN);
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final ByteArrayValueHandler valueHandler = new ByteArrayValueHandler();
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = "old".getBytes();
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        keyHandler.theKey = 11;
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // when
-//        valueHandler.theValue = "hallo".getBytes();
-//        bucketBufferArray.updateValue(valueHandler, newBucketAddress, newBlockOffset);
-//
-//        // then updated block
-//        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        keyHandler.theKey = 10;
-//        boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(10);
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo("hallo".getBytes());
-//
-//        // old block
-//        final int oldBlockOffset = newBlockOffset + bucketBufferArray.getBlockLength();
-//        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
-//
-//        keyHandler.theKey = 11;
-//        keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, oldBlockOffset);
-//        assertThat(keyEquals).isTrue();
-//        bucketBufferArray.readKey(keyHandler, newBucketAddress, oldBlockOffset);
-//        assertThat(keyHandler.theKey).isEqualTo(11);
-//
-//        valueHandler.theValue = new byte[3];
-//        bucketBufferArray.readValue(valueHandler, newBucketAddress, oldBlockOffset);
-//        assertThat(valueHandler.theValue).isEqualTo("old".getBytes());
-//    }
-//
-//    @Test
-//    public void shouldThrowOnUpdateBlockValueWithTooLargerValue()
-//    {
-//        // given bucket array with 1 bucket and two blocks
-//        bucketBufferArray = new BucketBufferArray(MIN_BLOCK_COUNT, MAX_KEY_LEN, MAX_VALUE_LEN);
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final ByteArrayValueHandler valueHandler = new ByteArrayValueHandler();
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = "old".getBytes();
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        keyHandler.theKey = 11;
-//        bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
-//
-//        // expect
-//        expectedException.expect(IllegalArgumentException.class);
-//        expectedException.expectMessage("Value can't exceed the max value length of 8");
-//
-//        // when
-//        valueHandler.theValue = "toLargeValue1234".getBytes();
-//        bucketBufferArray.updateValue(valueHandler, newBucketAddress, newBlockOffset);
-//    }
+    @Test
+    public void shouldUpdateBlockValue()
+    {
+        // given
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        buffer.putLong(0, 10L);
+        buffer.putLong(MAX_KEY_LEN, 0xFFL);
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // when
+        UnsafeBuffer valueBuffer = new UnsafeBuffer(new byte[MAX_VALUE_LEN]);
+        valueBuffer.putLong(0, 0xAA);
+        
+        bucketBufferArray.updateValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
+
+        // then
+        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        
+        UnsafeBuffer keyBuffer = new UnsafeBuffer(new byte[MAX_VALUE_LEN]);
+        keyBuffer.putLong(0, 10L);
+        final boolean keyEquals = bucketBufferArray.keyEquals(newBucketAddress, newBlockOffset, keyBuffer.byteArray());
+        assertThat(keyEquals).isTrue();
+
+        bucketBufferArray.readKey(newBucketAddress, newBlockOffset, keyBuffer.byteArray());
+        assertThat(keyBuffer.getLong(0)).isEqualTo(10);
+
+        bucketBufferArray.readValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
+        assertThat(valueBuffer.getLong(0)).isEqualTo(0xAA);
+    }
+
+    @Test
+    public void shouldUpdateBlockValueWithSmallerValue()
+    {
+        // given bucket array with 1 bucket and two blocks
+        bucketBufferArray = new BucketBufferArray(MIN_BLOCK_COUNT, MAX_KEY_LEN, MAX_VALUE_LEN);
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);        
+        
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        buffer.putLong(0, 10L);
+        buffer.putStringWithoutLengthAscii(MAX_KEY_LEN, "hallo");
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        
+        buffer.putLong(0, 11L);
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        final int firstBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // when update first block
+        
+        UnsafeBuffer valueBuffer = new UnsafeBuffer(new byte[MAX_VALUE_LEN]);
+        valueBuffer.putStringWithoutLengthAscii(0, "new");
+        bucketBufferArray.updateValue(newBucketAddress, firstBlockOffset, valueBuffer.byteArray());
+
+        // then updated block
+        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+        
+        UnsafeBuffer keyBuffer = new UnsafeBuffer(new byte[MAX_KEY_LEN]);
+        keyBuffer.putLong(0, 10L);
+        
+        boolean keyEquals = bucketBufferArray.keyEquals(newBucketAddress, firstBlockOffset, keyBuffer.byteArray());
+        assertThat(keyEquals).isTrue();
+        bucketBufferArray.readKey(newBucketAddress, firstBlockOffset, keyBuffer.byteArray());
+        assertThat(keyBuffer.getLong(0)).isEqualTo(10);
+        bucketBufferArray.readValue(newBucketAddress, firstBlockOffset, valueBuffer.byteArray());
+        assertThat(valueBuffer.getStringWithoutLengthUtf8(0, 3)).isEqualTo("new");
+
+        // old block
+        final int oldBlockOffset = firstBlockOffset + bucketBufferArray.getBlockLength();
+        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        keyBuffer.putLong(0, 11L);
+        keyEquals = bucketBufferArray.keyEquals(newBucketAddress, oldBlockOffset, keyBuffer.byteArray());
+        assertThat(keyEquals).isTrue();
+        
+        bucketBufferArray.readKey(newBucketAddress, oldBlockOffset, keyBuffer.byteArray());
+        assertThat(keyBuffer.getLong(0)).isEqualTo(11);
+
+        
+        bucketBufferArray.readValue(newBucketAddress, oldBlockOffset, valueBuffer.byteArray());
+        assertThat(valueBuffer.getStringWithoutLengthUtf8(0, 5)).isEqualTo("hallo");
+    }
+
+    @Test
+    public void shouldUpdateBlockValueWithLargerValue()
+    {
+        // given bucket array with 1 bucket and two blocks
+        bucketBufferArray = new BucketBufferArray(MIN_BLOCK_COUNT, MAX_KEY_LEN, MAX_VALUE_LEN);        
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        buffer.putLong(0, 10L);
+        buffer.putStringWithoutLengthAscii(MAX_KEY_LEN, "old");
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        
+        buffer.putLong(0, 11L);
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // when
+        UnsafeBuffer valueBuffer = new UnsafeBuffer(new byte[MAX_VALUE_LEN]);
+        valueBuffer.putStringWithoutLengthAscii(0, "hallo");
+        bucketBufferArray.updateValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
+        
+        // then updated block
+        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        UnsafeBuffer keyBuffer = new UnsafeBuffer(new byte[MAX_KEY_LEN]);
+        keyBuffer.putLong(0, 10L);
+        boolean keyEquals = bucketBufferArray.keyEquals(newBucketAddress, newBlockOffset, keyBuffer.byteArray());
+        assertThat(keyEquals).isTrue();
+        bucketBufferArray.readKey(newBucketAddress, newBlockOffset, keyBuffer.byteArray());
+        assertThat(keyBuffer.getLong(0)).isEqualTo(10L);
+        
+        bucketBufferArray.readValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
+        assertThat(valueBuffer.getStringWithoutLengthUtf8(0, 5)).isEqualTo("hallo");
+
+        // old block
+        final int oldBlockOffset = newBlockOffset + bucketBufferArray.getBlockLength();
+        assertThat(bucketBufferArray.getBlockLength()).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
+
+        keyBuffer.putLong(0, 11L);
+        keyEquals = bucketBufferArray.keyEquals(newBucketAddress, oldBlockOffset, keyBuffer.byteArray());
+        assertThat(keyEquals).isTrue();
+        bucketBufferArray.readKey(newBucketAddress, oldBlockOffset, keyBuffer.byteArray());
+        assertThat(keyBuffer.getLong(0)).isEqualTo(11);
+
+        bucketBufferArray.readValue(newBucketAddress, oldBlockOffset, valueBuffer.byteArray());
+        assertThat(valueBuffer.getStringWithoutLengthUtf8(0, 3)).isEqualTo("old");
+    }
+
+    @Test
+    public void shouldThrowOnUpdateBlockValueWithTooLargerValue()
+    {
+        // given bucket array with 1 bucket and two blocks
+        bucketBufferArray = new BucketBufferArray(MIN_BLOCK_COUNT, MAX_KEY_LEN, MAX_VALUE_LEN);
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        
+        
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        buffer.putLong(0, 10L);
+        buffer.putStringWithoutLengthAscii(MAX_KEY_LEN, "old");
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        
+        buffer.putLong(0, 11L);
+        bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
+
+        // expect
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Value can't exceed the max value length of 8");
+
+        // when
+        UnsafeBuffer valueBuffer = new UnsafeBuffer(new byte[256]);
+        buffer.putStringWithoutLengthAscii(0, "toLargeValue1234");
+        bucketBufferArray.updateValue(newBucketAddress, newBlockOffset, valueBuffer.byteArray());
+    }
+    
 //
 //    @Test
 //    public void shouldRelocateBlock()

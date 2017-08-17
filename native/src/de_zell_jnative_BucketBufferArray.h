@@ -139,6 +139,14 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    updateValue
+ * Signature: (JJI[B)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_updateValue
+  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    addBlock
  * Signature: (JJ[B)Z
  */
