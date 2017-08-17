@@ -94,11 +94,19 @@ int64_t getRealAddress(JNIEnv *env, struct BucketBufferArray* bucketBufferArray,
     return (int64_t) bucketBufferArray->realAddresses[bucketBufferId] + offset;
 }
 
-int64_t getRealAddress(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, int64_t bucketAddress)
+int64_t getBucketAddress(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, int64_t bucketAddress)
 {
     int32_t bucketBufferId = (int32_t) (bucketAddress >> 32);
     int32_t bucketOffset = (int32_t) bucketAddress;
-    return getRealAddress(bucketBufferId, bucketOffset);
+    return getRealAddress(env, bucketBufferArray, bucketBufferId, bucketOffset);
+}
+
+int64_t getBucketWrappedAddress(int32_t bucketBufferId, int32_t bucketOffset)
+{
+    int64_t bucketAddress = 0;
+    bucketAddress += (int64_t) bucketBufferId << 32;
+    bucketAddress += bucketOffset;
+    return bucketAddress;
 }
 
 void clearBucketBufferArray(struct BucketBufferArray* bucketBufferArray)
@@ -301,6 +309,50 @@ JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
     }
 }
 
+int32_t getBucketFillCount(struct BucketBufferArray* bucketBufferArray, uint8_t* bucketPtr)
+{
+    int32_t bucketFillCount = 0;
+    deserialize_int32(bucketPtr + BUCKET_FILL_COUNT_OFFSET, &bucketFillCount);
+    
+    return bucketFillCount;
+}
+
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketFillCount
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    
+    return getBucketFillCount(bucketBufferArray, bucketPtr);
+}
+
+
+int32_t getBucketLength(struct BucketBufferArray* bucketBufferArray, uint8_t* bucketPtr)
+{
+    int32_t bucketFillCount = 0;
+    deserialize_int32(bucketPtr + BUCKET_FILL_COUNT_OFFSET, &bucketFillCount);
+    
+    int32_t bucketLength = bucketFillCount 
+            * (bucketBufferArray->maxKeyLength + bucketBufferArray->maxValueLength)
+            + BUCKET_HEADER_LENGTH;
+    
+    return bucketLength;
+}
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketLength
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketLength
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    return getBucketLength(bucketBufferArray, bucketPtr);
+}
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -315,7 +367,7 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
     
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    jbyte* keyPtr = (jbyte*) (getRealAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
+    jbyte* keyPtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
     
     
     for (int i = 0; i < lengthOfArray; i++)
@@ -345,7 +397,7 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readKey
     
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    jbyte* keyPtr = (jbyte*) (getRealAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
+    jbyte* keyPtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
         
     memcpy(bufferPtr, keyPtr, lengthOfArray);
     
@@ -366,12 +418,59 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
     
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    jbyte* valuePtr = (jbyte*) (getRealAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
+    jbyte* valuePtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
         
     memcpy(bufferPtr, valuePtr, lengthOfArray);
     
     // mode == 0 copy back the content and free the elems buffer
     (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, 0);    
+}
+
+
+jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress, jbyteArray buffer)
+{
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    int32_t bucketFillCount = getBucketFillCount(bucketBufferArray, bucketPtr);
+    
+    // can add record
+    uint8_t canAddRecord = bucketFillCount < bucketBufferArray->maxBucketBlockCount;
+    if (canAddRecord)
+    {
+        uint32_t blockOffset = getBucketLength(bucketBufferArray, bucketPtr);
+        
+//            keyHandler.writeKey(blockAddress + BLOCK_KEY_OFFSET);
+//            valueHandler.writeValue(getBlockValueOffset(blockAddress, maxKeyLength));
+        jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
+        jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
+        
+        memcpy(bucketPtr + blockOffset, bufferPtr, lengthOfArray);
+        
+        // mode == JNI_ABORT free the buffer without copying back the possible changes
+        (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
+        
+//            setBucketFillCount(bucketAddress, bucketFillCount + 1);
+        serialize_int32((uint8_t*) bucketPtr + BUCKET_FILL_COUNT_OFFSET, bucketFillCount + 1);
+        
+//            setBlockCount(getBlockCount() + 1);
+        uint8_t *mainBlockCountAddress = ((uint8_t*) bucketBufferArray->bucketBufferHeaderAddress) + MAIN_BLOCK_COUNT_OFFSET;
+        int32_t count = 0;
+        deserialize_int32(mainBlockCountAddress, &count);
+        serialize_int32(mainBlockCountAddress, count + 1);
+    }
+    else
+    {
+        // overflow
+        int64_t overflowPtr = 0;
+        deserialize_int64(bucketPtr, &overflowPtr);
+        
+        if (overflowPtr != 0)
+        {
+            addBlock(env, bucketBufferArray, overflowPtr, buffer);
+        }
+    }
+    
+    return canAddRecord;
 }
 
 /*
@@ -381,35 +480,10 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
  */
 JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
 (JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jbyteArray buffer)
-{
+{    
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    
-//        final int bucketFillCount = getBucketFillCount(bucketAddress);
-//        final boolean canAddRecord = bucketFillCount < maxBucketBlockCount;
-//
-//        if (canAddRecord)
-//        {
-//            final int blockOffset = getBucketLength(bucketAddress);
-//            final int blockLength = BucketBufferArrayDescriptor.getBlockLength(maxKeyLength, maxValueLength);
-//
-//            final long blockAddress = getRealAddress(bucketAddress) + blockOffset;
-//
-//            keyHandler.writeKey(blockAddress + BLOCK_KEY_OFFSET);
-//            valueHandler.writeValue(getBlockValueOffset(blockAddress, maxKeyLength));
-//
-//            setBucketFillCount(bucketAddress, bucketFillCount + 1);
-//            setBlockCount(getBlockCount() + 1);
-//        }
-//        else
-//        {
-//            final long overflowBucketAddress = getBucketOverflowPointer(bucketAddress);
-//            if (overflowBucketAddress > 0)
-//            {
-//                return addBlock(overflowBucketAddress, keyHandler, valueHandler);
-//            }
-//        }
-//
-//        return canAddRecord;
+    return addBlock(env, bucketBufferArray, bucketAddress, buffer);
 }
 
 /*
@@ -418,7 +492,17 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
  * Signature: (JJ)I
  */
 JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketId
-  (JNIEnv *, jobject, jlong, jlong);
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    
+    int32_t bucketId = 0;
+    deserialize_int32(bucketPtr + BUCKET_ID_OFFSET, &bucketId);
+    
+    return bucketId;
+}
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -426,7 +510,17 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketId
  * Signature: (JJ)I
  */
 JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketDepth
-  (JNIEnv *, jobject, jlong, jlong);
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    
+    int32_t bucketId = 0;
+    deserialize_int32(bucketPtr + BUCKET_DEPTH_OFFSET, &bucketId);
+    
+    return bucketId;
+}
 
 
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
@@ -458,10 +552,9 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     int64_t bucketAddress = getRealAddress(env, bucketBufferArray, bucketBufferId, bucketOffset);
     bucketBufferArray->countOfUsedBytes = newUsed;
 
-    void* address = bucketBufferArray->realAddresses[bucketBufferId] + bucketOffset;
-    serialize_int32((uint8_t*) address + BUCKET_FILL_COUNT_OFFSET, 0);
-    serialize_int32((uint8_t*) address + BUCKET_ID_OFFSET, newBucketId);
-    serialize_int32((uint8_t*) address + BUCKET_DEPTH_OFFSET, newBucketDepth);
+    serialize_int32((uint8_t*) bucketAddress + BUCKET_FILL_COUNT_OFFSET, 0);
+    serialize_int32((uint8_t*) bucketAddress + BUCKET_ID_OFFSET, newBucketId);
+    serialize_int32((uint8_t*) bucketAddress + BUCKET_DEPTH_OFFSET, newBucketDepth);
 
     // maybe set overflow pointer here? instead clear all on new bucket buffer
 
@@ -477,7 +570,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     deserialize_int32(mainBucketCountAddress, &count);
     serialize_int32(mainBucketCountAddress, count + 1);
 
-    return bucketAddress;
+    return getBucketWrappedAddress(bucketBufferId, bucketOffset);
 }
 
 /*
