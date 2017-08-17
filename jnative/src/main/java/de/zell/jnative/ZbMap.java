@@ -355,10 +355,8 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
         do
         {
-            System.out.println("Bucket address: " + bucketAddress);
             
             final int bucketFillCount = bucketBufferArray.getBucketFillCount(bucketAddress);
-            System.out.println("Bucket fill count: " + bucketFillCount);
             int blockOffset = bucketBufferArray.getFirstBlockOffset();
             int blocksVisited = 0;
 
@@ -375,11 +373,8 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
                 blocksVisited++;
             }
 
-            System.out.println("Before ?: " + bucketAddress);
             bucketAddress = bucketBufferArray.getBucketOverflowPointer(bucketAddress);
-            System.out.println("Overflow ?: " + bucketAddress);
         } while (!keyFound && bucketAddress > 0);
-        System.out.println("Found: " + foundBlock.wasFound());
         return foundBlock;
     }
 
