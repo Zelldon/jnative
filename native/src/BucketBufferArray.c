@@ -21,13 +21,6 @@
 #include "BucketBufferArrayDescriptor.h"
 #include "serialization.h"
 
-void clearOverflowPointers(uint8_t *bucketBufferPtr, uint32_t maxBucketLength) {
-    const uint8_t startOffset = BUCKET_BUFFER_HEADER_LENGTH;
-    for (uint32_t i = 0; i < ALLOCATION_FACTOR; i++) {
-        serialize_int64(bucketBufferPtr + startOffset + i * maxBucketLength, 0L);
-    }
-}
-
 void allocateBucketBufferHeader(struct BucketBufferArray* bucketBufferArray) {
     bucketBufferArray->bucketBufferHeaderAddress = malloc(MAIN_BUCKET_BUFFER_HEADER_LEN);
     uint8_t *bucketBufferHeader = (uint8_t*) bucketBufferArray->bucketBufferHeaderAddress;
@@ -72,7 +65,8 @@ void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int ne
     //        clearOverflowPointers(newBucketBufferId);
     //     setBucketBufferCount(getBucketBufferCount() + 1);
     serialize_int32(newBucketBufferPtr + BUCKET_BUFFER_BUCKET_COUNT_OFFSET, 0);
-    clearOverflowPointers(newBucketBufferPtr, bucketBufferArray->maxBucketLength);
+    // is done now on allocation bucket
+//    clearOverflowPointers(newBucketBufferPtr, bucketBufferArray->maxBucketLength);
 
     uint8_t *address = ((uint8_t*) bucketBufferArray->bucketBufferHeaderAddress) + MAIN_BUFFER_COUNT_OFFSET;
     int32_t count = 0;
@@ -480,10 +474,10 @@ jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint
     }
     else
     {
+        
         // overflow
         int64_t overflowPtr = 0;
-        deserialize_int64(bucketPtr, &overflowPtr);
-        
+        deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
         if (overflowPtr != 0)
         {
             addBlock(env, bucketBufferArray, overflowPtr, buffer);
@@ -575,6 +569,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucket
     serialize_int32((uint8_t*) bucketAddress + BUCKET_FILL_COUNT_OFFSET, 0);
     serialize_int32((uint8_t*) bucketAddress + BUCKET_ID_OFFSET, newBucketId);
     serialize_int32((uint8_t*) bucketAddress + BUCKET_DEPTH_OFFSET, newBucketDepth);
+    serialize_int64((uint8_t*) bucketAddress + BUCKET_OVERFLOW_POINTER_OFFSET, 0L);
 
     // maybe set overflow pointer here? instead clear all on new bucket buffer
 

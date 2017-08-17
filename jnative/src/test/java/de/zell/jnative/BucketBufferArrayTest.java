@@ -305,24 +305,22 @@ public class BucketBufferArrayTest
     @Test
     public void shouldClearBucketArray()
     {
-//        // given bucketBufferArray
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//
-//        // when
-//        bucketBufferArray.clear();
-//
-//        // then only count and overflow pointers are set to zero
-//        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(0);
-//        assertThat(bucketBufferArray.getCapacity()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH + ALLOCATION_FACTOR * bucketBufferArray.getMaxBucketLength());
-//        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
+        // given bucketBufferArray
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+
+        // when
+        bucketBufferArray.clear();
+
+        // then only count and overflow pointers are set to zero
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(0);
+        assertThat(bucketBufferArray.getCapacity()).isEqualTo(BUCKET_BUFFER_HEADER_LENGTH + ALLOCATION_FACTOR * bucketBufferArray.getMaxBucketLength());
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(0);
     }
 
     @Test
     public void shouldCreateBlock()
     {
         // given
-        final LongKeyHandler keyHandler = new LongKeyHandler();
-        final LongValueHandler valueHandler = new LongValueHandler();
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
 
         // when
@@ -380,30 +378,30 @@ public class BucketBufferArrayTest
 //        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET);
 //    }
 //
-//    @Test
-//    public void shouldAddMoreBlocksThanMinimalFitSize()
-//    {
-//        // given bucket array with 2 blocks
-//        final LongKeyHandler keyHandler = new LongKeyHandler();
-//        final ByteArrayValueHandler valueHandler = new ByteArrayValueHandler();
-//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-//        keyHandler.theKey = 10;
-//        valueHandler.theValue = "1".getBytes();
-//        boolean wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        assertThat(wasAdded).isTrue();
-//        wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//        assertThat(wasAdded).isTrue();
-//
+    @Test
+    public void shouldAddMoreBlocksThanMinimalFitSize()
+    {
+        // given bucket array with 2 blocks
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
+        
+        UnsafeBuffer buffer = new UnsafeBuffer(new byte[bucketBufferArray.getBlockLength()]);
+        buffer.putLong(0, 10L);
+        buffer.putLong(MAX_KEY_LEN, 0xFFL);
+        boolean wasAdded = bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        assertThat(wasAdded).isTrue();
+        wasAdded = bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+        assertThat(wasAdded).isTrue();
+
 //        // when
-//        wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-//
-//        // then
-//        assertThat(wasAdded).isFalse();
+        wasAdded = bucketBufferArray.addBlock(newBucketAddress, buffer.byteArray());
+
+        // then
+        assertThat(wasAdded).isFalse();
 //        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(1);
 //        assertThat(bucketBufferArray.getBucketLength(newBucketAddress)).isEqualTo(BUCKET_DATA_OFFSET + 2 * getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
 //        assertThat(bucketBufferArray.getBucketFillCount(newBucketAddress)).isEqualTo(2);
 //        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(2);
-//    }
+    }
 
 //    @Test
 //    public void shouldUpdateBlockValue()
