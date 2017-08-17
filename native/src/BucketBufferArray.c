@@ -42,12 +42,9 @@ void allocateNewBucketBuffer(struct BucketBufferArray* bucketBufferArray, int ne
     int32_t mod = newBucketBufferId & (ALLOCATION_FACTOR - 1);
     if (newBucketBufferId != 0 && mod == 0)
     {
-        printf("======\n");
-        printf("====Increase Addresses==\n");
-        printf("======\n");
         int32_t bucketBufferCount = getBucketBufferCount(bucketBufferArray);
         void **newAddressTable = malloc((bucketBufferCount + ALLOCATION_FACTOR) * sizeof (void*));
-        memcpy(newAddressTable, bucketBufferArray->realAddresses, bucketBufferCount);
+        memcpy(newAddressTable, bucketBufferArray->realAddresses, bucketBufferCount * sizeof(void*));
         free(bucketBufferArray->realAddresses);
         bucketBufferArray->realAddresses = newAddressTable;
         
@@ -100,7 +97,6 @@ int64_t getBucketAddress(JNIEnv *env, struct BucketBufferArray* bucketBufferArra
     int32_t bucketBufferId = (int32_t) (bucketAddress >> 32);
     int32_t bucketOffset = (int32_t) bucketAddress;
     
-    printf("BucketAddress id: %d offset %d\n", bucketBufferId, bucketOffset);
     return getRealAddress(env, bucketBufferArray, bucketBufferId, bucketOffset);
 }
 
@@ -328,11 +324,11 @@ JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
     }
 }
 
-int32_t getBucketFillCount(struct BucketBufferArray* bucketBufferArray, uint8_t* bucketPtr)
+int32_t getBucketFillCount(uint8_t* bucketPtr)
 {
     int32_t bucketFillCount = 0;
     deserialize_int32(bucketPtr + BUCKET_FILL_COUNT_OFFSET, &bucketFillCount);
-    printf("Filld count: %d\n", bucketFillCount);
+
     return bucketFillCount;
 }
 
@@ -343,7 +339,7 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketFillCount
     
     uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
     
-    return getBucketFillCount(bucketBufferArray, bucketPtr);
+    return getBucketFillCount(bucketPtr);
 }
 
 
@@ -484,7 +480,7 @@ jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint
 {
     
     uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
-    int32_t bucketFillCount = getBucketFillCount(bucketBufferArray, bucketPtr);
+    int32_t bucketFillCount = getBucketFillCount(bucketPtr);
     
     // can add record
     uint8_t canAddRecord = bucketFillCount < bucketBufferArray->maxBucketBlockCount;
@@ -564,7 +560,7 @@ void removeBlockFromBucket(JNIEnv *env, struct BucketBufferArray* bucketBufferAr
     moveRemainingMemory(bucketBufferArray, bucketPtr, nextBlockOffset, -blockLength);
     
 //        setBucketFillCount(bucketAddress, getBucketFillCount(bucketAddress) - 1);
-    int32_t bucketFillCount = getBucketFillCount(bucketBufferArray, bucketPtr);
+    int32_t bucketFillCount = getBucketFillCount(bucketPtr);
     serialize_int32((uint8_t*) bucketPtr + BUCKET_FILL_COUNT_OFFSET, bucketFillCount - 1);
 }
 
@@ -734,7 +730,7 @@ void relocate(JNIEnv * env, struct BucketBufferArray* bucketBufferArray, jlong b
 {
     
     uint8_t *destBucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, newBucketAddress);    
-    int32_t destBucketFillCount = getBucketFillCount(bucketBufferArray, destBucketPtr);
+    int32_t destBucketFillCount = getBucketFillCount(destBucketPtr);
     
     if (destBucketFillCount >= bucketBufferArray->maxBucketBlockCount)
     {

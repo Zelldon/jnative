@@ -175,20 +175,49 @@ public class BucketBufferArrayTest
         // given
         // default address array is 32 - so in the begin we can create 32 bucket buffers after that the
         // array will be doubled
-        for (int i = 0; i < 32 * 32; i++)
+        
+        final LongKeyHandler keyHandler = new LongKeyHandler();
+        final LongValueHandler valueHandler = new LongValueHandler();
+        BucketBufferArray bucketBufferArray = new BucketBufferArray(1, MAX_KEY_LEN, MAX_VALUE_LEN);
+        
+        final int bucketBufferCount = 32;
+        keyHandler.setKey(10);
+        valueHandler.setValue(0xFF);
+        for (int i = 0; i < 32 * bucketBufferCount; i++)
         {
-            bucketBufferArray.allocateNewBucket(i, i);
+            final long newBucketAddress = bucketBufferArray.allocateNewBucket(i, i);
+            final boolean wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
+
+            assertThat(wasAdded).isTrue();
         }
-
-        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(32);
-
-        // when
-        final long newBucketAddress = bucketBufferArray.allocateNewBucket(0xFF, 0xFF);
-//        bucketBufferArray.allocateNewBucket(0xFF, 0xFF);
-
-        // then address array is increased so we can create new bucket buffer
-        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(33);
-        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(32 * 32 + 1);
+//
+        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(bucketBufferCount);
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(32 * bucketBufferCount);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(32 * bucketBufferCount);
+        
+        
+        final long newBucketAddress = bucketBufferArray.allocateNewBucket(bucketBufferCount, bucketBufferCount);
+        final boolean wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
+        
+        assertThat(wasAdded).isTrue();
+        assertThat(bucketBufferArray.getBucketBufferCount()).isEqualTo(bucketBufferCount + 1);
+        assertThat(bucketBufferArray.getBucketCount()).isEqualTo(32 * bucketBufferCount + 1);
+        assertThat(bucketBufferArray.getBlockCount()).isEqualTo(32 * bucketBufferCount + 1);
+        
+        
+        for (int i = 0; i < bucketBufferCount; i++)
+        {
+            for (int j = 0; j < 32; j++)
+            {
+                final long bucketAddress = getBucketAddress(i, BUCKET_BUFFER_HEADER_LENGTH + j * bucketBufferArray.getMaxBucketLength());
+                
+                assertThat(bucketBufferArray.getBucketFillCount(bucketAddress)).isEqualTo(1);
+//                assertThat(bucketBufferArray.getBucketDepth(bucketAddress)).isEqualTo(i * j + i + j);
+//                assertThat(bucketBufferArray.getBucketId(bucketAddress)).isEqualTo(i * j + j);
+                
+                
+            }
+        }
     }
 
     @Test
