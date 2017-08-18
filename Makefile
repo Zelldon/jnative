@@ -14,6 +14,7 @@ ccompile: javah
 	    -I'${JAVA}/linux' \
 	    -Wall -Werror \
 	    -fPIC \
+	    -Ofast \
 	    -c native/src/*.h native/src/*.c
 
 shared-lib: ccompile
