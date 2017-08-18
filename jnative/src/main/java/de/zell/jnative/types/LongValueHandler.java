@@ -15,45 +15,32 @@
  */
 package de.zell.jnative.types;
 
+import static org.agrona.BitUtil.SIZE_OF_LONG;
+
+import de.zell.jnative.BucketBufferArray;
 import de.zell.jnative.ValueHandler;
-import org.agrona.BitUtil;
-import org.agrona.MutableDirectBuffer;
-import org.agrona.concurrent.UnsafeBuffer;
 
 @SuppressWarnings("restriction")
 public class LongValueHandler implements ValueHandler
 {
+    public long theValue;
 
-    private MutableDirectBuffer directBuffer = new UnsafeBuffer(new byte[BitUtil.SIZE_OF_LONG]);
-    
     @Override
     public int getValueLength()
     {
-        return BitUtil.SIZE_OF_LONG;
+        return SIZE_OF_LONG;
     }
 
     @Override
-    public long getValue()
+    public void writeValue(long writeValueAddr)
     {
-        return directBuffer.getLong(0);
+        BucketBufferArray.writeLong(writeValueAddr, theValue);
     }
 
     @Override
-    public void setValue(long value)
+    public void readValue(long valueAddr)
     {
-        directBuffer.putLong(0, value);
+        theValue = BucketBufferArray.readLong(valueAddr);
     }
-
-    @Override
-    public byte[] getBytes() {
-        return directBuffer.byteArray();
-    }
-
-    @Override
-    public void wrap(MutableDirectBuffer buffer) {
-        directBuffer = buffer;
-    }
-    
-    
 
 }

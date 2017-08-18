@@ -20,7 +20,6 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 
 import io.zeebe.map.BucketBufferArrayDescriptor;
-import org.agrona.concurrent.UnsafeBuffer;
 
 /**
  *
@@ -44,8 +43,6 @@ public class BucketBufferArray implements AutoCloseable
     private final int maxBucketLength;
     private final int maxBucketBufferLength;
 
-    private final UnsafeBuffer valueBuffer;
-    private final UnsafeBuffer keyBuffer;
     public BucketBufferArray(int maxBucketBlockCount, int maxKeyLength, int maxValueLength)
     {
         this.maxBucketLength =
@@ -63,10 +60,7 @@ public class BucketBufferArray implements AutoCloseable
         
         this.maxKeyLength = maxKeyLength;
         this.maxValueLength = maxValueLength;
-        
-         valueBuffer = new UnsafeBuffer(new byte[maxValueLength]);
-         keyBuffer = new UnsafeBuffer(new byte[maxKeyLength]);
-         
+               
 
         instanceAddress = createInstance(maxBucketLength, maxBucketBlockCount, maxKeyLength, maxValueLength, maxBucketBufferLength);
     }
@@ -99,6 +93,9 @@ public class BucketBufferArray implements AutoCloseable
 
     private native void allocateNewBucketBuffer(long instanceAddress, int newBucketBufferID);
 
+
+    public static native long readLong(long address);
+    public static native void writeLong(long address, long value);
 
     // BUCKET BUFFER ARRAY ///////////////////////////////////////////////////////////////////////////
     
@@ -320,30 +317,45 @@ public class BucketBufferArray implements AutoCloseable
     public boolean keyEquals(KeyHandler keyhandler, long bucketAddress, int blockOffset)
     {
 //        return keyHandler.keyEquals(getRealAddress(bucketAddress) + blockOffset + BLOCK_KEY_OFFSET);
-        return keyEquals(instanceAddress, bucketAddress, blockOffset, keyhandler.getbytes());
+
+
+//        return keyEquals(instanceAddress, bucketAddress, blockOffset, keyhandler.getbytes());
+
+        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+        return keyhandler.keyEquals(blockAddress);
     }
     
-    private native boolean keyEquals(long instanceAddress, long bucketAddress, int blockOffset, byte[] key);
+//    private native boolean keyEquals(long instanceAddress, long bucketAddress, int blockOffset, byte[] key);
 //
     public void readKey(KeyHandler keyHandler,long bucketAddress, int blockOffset)
     {
 //        keyHandler.readKey(getRealAddress(bucketAddress) + blockOffset + BLOCK_KEY_OFFSET);
-        keyHandler.wrap(keyBuffer);
-        readKey(instanceAddress, bucketAddress, blockOffset, keyBuffer.byteArray());
+
+//        keyHandler.wrap(keyBuffer);
+//        readKey(instanceAddress, bucketAddress, blockOffset, keyBuffer.byteArray());
+
+        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+        keyHandler.readKey(blockAddress);
     }
     
-    private native void readKey(long instanceAddress, long bucketAddress, int blockOffset, byte[] keyBuffer);
+//    private native void readKey(long instanceAddress, long bucketAddress, int blockOffset, byte[] keyBuffer);
 
     
     public void readValue(ValueHandler valueHandler, long bucketAddress, int blockOffset)
     {
 //        final long valueOffset = getBlockValueOffset(getRealAddress(bucketAddress) + blockOffset, maxKeyLength);
 //        valueHandler.readValue(valueOffset, maxValueLength);
-        valueHandler.wrap(valueBuffer);
-        readValue(instanceAddress, bucketAddress, blockOffset, valueBuffer.byteArray());
+//
+
+//        valueHandler.wrap(valueBuffer);
+//        readValue(instanceAddress, bucketAddress, blockOffset, valueBuffer.byteArray());
+
+        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+        valueHandler.readValue(blockAddress + maxKeyLength);
+
     }
     
-    private native void readValue(long instanceAddress, long bucketAddress, int blockOffset, byte[] valueBuffer);
+//    private native void readValue(long instanceAddress, long bucketAddress, int blockOffset, byte[] valueBuffer);
 //
     public void updateValue(ValueHandler handler, long bucketAddress, int blockOffset)
     {
@@ -355,24 +367,40 @@ public class BucketBufferArray implements AutoCloseable
 //
 //        final long blockAddress = getRealAddress(bucketAddress) + blockOffset;
 //        valueHandler.writeValue(getBlockValueOffset(blockAddress, maxKeyLength));
-        updateValue(instanceAddress, bucketAddress, blockOffset, handler.getBytes());
-//        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+//        updateValue(instanceAddress, bucketAddress, blockOffset, handler.getBytes());
+
+        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+        handler.writeValue(blockAddress + maxKeyLength);
+        //        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
 //        
 //        handler.writeValue(blockAddress);
     }
     
-    private native void updateValue(long instanceAddress, long bucketAddress, int blockOffset, byte [] newValue);
-    
+//    private native void updateValue(long instanceAddress, long bucketAddress, int blockOffset, byte [] newValue);
+
+
+    private native long getBlockAddress(long instanceAddress, long bucketAddress, int blockOffset);
     
     public boolean addBlock(long bucketAddress, KeyHandler keyhandler, ValueHandler valueHandler)
     {
-        UnsafeBuffer buffer = new UnsafeBuffer(new byte[keyhandler.getKeyLength() + valueHandler.getValueLength()]);
-        buffer.putBytes(0, keyhandler.getbytes());
-        buffer.putBytes(maxKeyLength, valueHandler.getBytes());
-        return addBlock(instanceAddress, bucketAddress, buffer.byteArray());
+//        UnsafeBuffer buffer = new UnsafeBuffer(new byte[keyhandler.getKeyLength() + valueHandler.getValueLength()]);
+//        buffer.putBytes(0, keyhandler.getbytes());
+//        buffer.putBytes(maxKeyLength, valueHandler.getBytes());
+
+
+        final long blockAddress = addBlock(instanceAddress, bucketAddress);
+
+        boolean foundFreeBlock = blockAddress != -1;
+        if (foundFreeBlock)
+        {
+            keyhandler.writeKey(blockAddress);
+            valueHandler.writeValue(blockAddress + maxKeyLength);
+        }
+
+        return foundFreeBlock;
     }
     
-    private native boolean addBlock(long instanceAddress, long bucketAddress, byte[] blockContent);
+    private native long addBlock(long instanceAddress, long bucketAddress);
 //
     public void removeBlock(long bucketAddress, int blockOffset)
     {
@@ -380,7 +408,7 @@ public class BucketBufferArray implements AutoCloseable
     }
     
     private native void removeBlock(long instanceAddress, long bucketAddress, int blockOffset);
-    private native void removeBlockFromBucket(long instanceAddress, long bucketAddress, int blockOffset);
+//    private native void removeBlockFromBucket(long instanceAddress, long bucketAddress, int blockOffset);
  
     
 //

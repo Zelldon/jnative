@@ -15,8 +15,6 @@
  */
 package de.zell.jnative;
 
-import org.agrona.MutableDirectBuffer;
-
 public interface KeyHandler
 {
     void setKeyLength(int keyLength);
@@ -24,15 +22,19 @@ public interface KeyHandler
     long keyHashCode();
 
     boolean keyEquals(long keyAddr);
-
-    long getKey();
-
-    void setKey(long key);
+    
+    void readKey(long blockAddr);
+    
+    void writeKey(long blockAddr);
+//
+//    long getKey();
+//
+//    void setKey(long key);
 
     int getKeyLength();
-    
-    byte[] getbytes();
-    
-    void wrap(MutableDirectBuffer buffer);
+//    
+//    byte[] getbytes();
+//    
+//    void wrap(MutableDirectBuffer buffer);
 
 }

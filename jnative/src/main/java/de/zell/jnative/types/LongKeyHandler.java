@@ -15,16 +15,16 @@
  */
 package de.zell.jnative.types;
 
+
+import de.zell.jnative.BucketBufferArray;
 import de.zell.jnative.KeyHandler;
 import org.agrona.BitUtil;
-import org.agrona.MutableDirectBuffer;
-import org.agrona.concurrent.UnsafeBuffer;
 
 @SuppressWarnings("restriction")
 public class LongKeyHandler implements KeyHandler
 {
-    
-    private MutableDirectBuffer unsafeBuffer = new UnsafeBuffer(new byte[BitUtil.SIZE_OF_LONG]);
+
+    public long theKey;
 
     @Override
     public void setKeyLength(int keyLength)
@@ -35,13 +35,13 @@ public class LongKeyHandler implements KeyHandler
     @Override
     public long keyHashCode()
     {
-        return Long.hashCode(unsafeBuffer.getLong(0));
+        return Long.hashCode(theKey);
     }
 
     @Override
     public String toString()
     {
-        return Long.valueOf(unsafeBuffer.getLong(0)).toString();
+        return Long.valueOf(theKey).toString();
     }
 
     @Override
@@ -51,32 +51,20 @@ public class LongKeyHandler implements KeyHandler
     }
 
     @Override
-    public void setKey(long key)
+    public void readKey(long keyAddr)
     {
-        unsafeBuffer.putLong(0, key);
+        theKey = BucketBufferArray.readLong(keyAddr);
     }
 
     @Override
-    public long getKey()
+    public void writeKey(long keyAddr)
     {
-        return unsafeBuffer.getLong(0);
+        BucketBufferArray.writeLong(keyAddr, theKey);
     }
 
     @Override
     public boolean keyEquals(long keyAddr)
     {
-        return false;
+        return BucketBufferArray.readLong(keyAddr) == theKey;
     }
-
-    @Override
-    public byte[] getbytes() {
-        return unsafeBuffer.byteArray();
-    }
-
-    @Override
-    public void wrap(MutableDirectBuffer buffer) {
-        unsafeBuffer = buffer;
-    }
-    
-    
 }

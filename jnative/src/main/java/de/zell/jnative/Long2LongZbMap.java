@@ -15,11 +15,10 @@
  */
 package de.zell.jnative;
 
-import de.zell.jnative.types.LongKeyHandler;
-import de.zell.jnative.types.LongValueHandler;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 
-
+import de.zell.jnative.types.LongKeyHandler;
+import de.zell.jnative.types.LongValueHandler;
 
 public class Long2LongZbMap extends ZbMap<LongKeyHandler, LongValueHandler>
 {
@@ -38,26 +37,25 @@ public class Long2LongZbMap extends ZbMap<LongKeyHandler, LongValueHandler>
 
     public long get(long key, long missingValue)
     {
-        keyHandler.setKey(key);
-        valueHandler.setValue(missingValue);
+        keyHandler.theKey = key;
+        valueHandler.theValue = missingValue;
         get();
-        return valueHandler.getValue();
+        return valueHandler.theValue;
     }
 
     public boolean put(long key, long value)
     {
-        keyHandler.setKey(key);
-        valueHandler.setValue(value);
+        keyHandler.theKey = key;
+        valueHandler.theValue = value;
         return put();
     }
 
     public long remove(long key, long missingValue)
-    {        
-        keyHandler.setKey(key);
-        valueHandler.setValue(missingValue);
+    {
+        keyHandler.theKey = key;
+        valueHandler.theValue = missingValue;
         remove();
-        return valueHandler.getValue();
+        return valueHandler.theValue;
     }
-
 
 }

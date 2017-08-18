@@ -15,17 +15,19 @@
  */
 package de.zell.jnative;
 
-import org.agrona.MutableDirectBuffer;
-
 public interface ValueHandler
 {
     int getValueLength();
-
-    long getValue();
-
-    void setValue(long value);
     
-    byte[] getBytes();
+    void readValue(long blockAddr);
     
-    void wrap(MutableDirectBuffer buffer);
+    void writeValue(long blockAddr);
+//
+//    long getValue();
+//
+//    void setValue(long value);
+//    
+//    byte[] getBytes();
+//    
+//    void wrap(MutableDirectBuffer buffer);
 }

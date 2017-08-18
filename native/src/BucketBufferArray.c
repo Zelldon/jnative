@@ -205,18 +205,7 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucketB
     allocateNewBucketBuffer((struct BucketBufferArray*) instanceAddress, newBucketBufferId);
 }
 
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readInt
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_readInt
-(JNIEnv *env, jobject jobj, jlong address) 
-{
-    int32_t value = 0;
-    deserialize_int32((uint8_t *) address, &value);
-    return value;
-}
+
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -230,6 +219,43 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
     deserialize_int64((uint8_t *) address, &value);
     return value;
 }
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    writeLong
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_writeLong
+  (JNIEnv *env, jobject jobj, jlong address, jlong value)
+{
+    serialize_int64((uint8_t*) address, value);
+}
+//
+///*
+// * Class:     de_zell_jnative_BucketBufferArray
+// * Method:    readInt
+// * Signature: (J)I
+// */
+//JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_readInt
+//(JNIEnv *env, jobject jobj, jlong address) 
+//{
+//    int32_t value = 0;
+//    deserialize_int32((uint8_t *) address, &value);
+//    return value;
+//}
+//
+///*
+// * Class:     de_zell_jnative_BucketBufferArray
+// * Method:    readLong
+// * Signature: (J)J
+// */
+//JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
+//(JNIEnv *env, jobject jobj, jlong address)
+//{
+//    int64_t value = 0L;
+//    deserialize_int64((uint8_t *) address, &value);
+//    return value;
+//}
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -387,96 +413,112 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketOverflow
     return overflowPtr;
 }
 
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    keyEquals
- * Signature: (JJI[B)Z
- */
-JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray keyBuffer)
-{
-    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, keyBuffer, NULL);
-    jsize lengthOfArray = (*env)->GetArrayLength(env, keyBuffer);
-    
-    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
-    
-    jbyte* keyPtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
-    
-    
-    for (int i = 0; i < lengthOfArray; i++)
-    {
-        if (keyPtr[i] != bufferPtr[i])
-        {
-            (*env)->ReleaseByteArrayElements(env, keyBuffer, bufferPtr, JNI_ABORT);
-            return JNI_FALSE;
-        }
-    }
-    
-    // mode == JNI_ABORT free the buffer without copying back the possible changes
-    (*env)->ReleaseByteArrayElements(env, keyBuffer, bufferPtr, JNI_ABORT);
-    return JNI_TRUE;
-}
+///*
+// * Class:     de_zell_jnative_BucketBufferArray
+// * Method:    keyEquals
+// * Signature: (JJI[B)Z
+// */
+//JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
+//(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray keyBuffer)
+//{
+//    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, keyBuffer, NULL);
+//    jsize lengthOfArray = (*env)->GetArrayLength(env, keyBuffer);
+//    
+//    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+//    
+//    jbyte* keyPtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
+//    
+//    
+//    for (int i = 0; i < lengthOfArray; i++)
+//    {
+//        if (keyPtr[i] != bufferPtr[i])
+//        {
+//            (*env)->ReleaseByteArrayElements(env, keyBuffer, bufferPtr, JNI_ABORT);
+//            return JNI_FALSE;
+//        }
+//    }
+//    
+//    // mode == JNI_ABORT free the buffer without copying back the possible changes
+//    (*env)->ReleaseByteArrayElements(env, keyBuffer, bufferPtr, JNI_ABORT);
+//    return JNI_TRUE;
+//}
+
+///*
+// * Class:     de_zell_jnative_BucketBufferArray
+// * Method:    readKey
+// * Signature: (JJI[B)V
+// */
+//JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readKey
+//(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray keyBuffer)
+//{
+//    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, keyBuffer, NULL);
+//    jsize lengthOfArray = (*env)->GetArrayLength(env, keyBuffer);
+//    
+//    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+//    
+//    jbyte* keyPtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
+//        
+//    memcpy(bufferPtr, keyPtr, lengthOfArray);
+//    
+//    // mode == 0 copy back the content and free the elems buffer
+//    (*env)->ReleaseByteArrayElements(env, keyBuffer, bufferPtr, 0);
+//}
+
+///*
+// * Class:     de_zell_jnative_BucketBufferArray
+// * Method:    readValue
+// * Signature: (JJI[B)V
+// */
+//JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
+//(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray buffer)
+//{
+//    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
+//    jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
+//    
+//    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+//    
+//    jbyte* valuePtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
+//        
+//    memcpy(bufferPtr, valuePtr, lengthOfArray);
+//    
+//    // mode == 0 copy back the content and free the elems buffer
+//    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, 0);    
+//}
+//
+//JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_updateValue
+//(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray buffer)
+//{
+//    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
+//    jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
+//    
+//    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+//    
+//    jbyte* valuePtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
+//            
+//    memcpy(valuePtr, bufferPtr, lengthOfArray);    
+//    
+//    // mode == JNI_ABORT free the buffer without copying back the possible changes
+//    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
+//}
+
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readKey
- * Signature: (JJI[B)V
+ * Method:    getBlockAddress
+ * Signature: (JJI)J
  */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readKey
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray keyBuffer)
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBlockAddress
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset)
 {
-    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, keyBuffer, NULL);
-    jsize lengthOfArray = (*env)->GetArrayLength(env, keyBuffer);
-    
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    jbyte* keyPtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset);
-        
-    memcpy(bufferPtr, keyPtr, lengthOfArray);
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
     
-    // mode == 0 copy back the content and free the elems buffer
-    (*env)->ReleaseByteArrayElements(env, keyBuffer, bufferPtr, 0);
-}
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readValue
- * Signature: (JJI[B)V
- */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray buffer)
-{
-    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
-    jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
-    
-    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
-    
-    jbyte* valuePtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
-        
-    memcpy(bufferPtr, valuePtr, lengthOfArray);
-    
-    // mode == 0 copy back the content and free the elems buffer
-    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, 0);    
-}
-
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_updateValue
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jbyteArray buffer)
-{
-    jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
-    jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
-    
-    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
-    
-    jbyte* valuePtr = (jbyte*) (getBucketAddress(env, bucketBufferArray, bucketAddress) + blockOffset + bucketBufferArray->maxKeyLength);
-            
-    memcpy(valuePtr, bufferPtr, lengthOfArray);    
-    
-    // mode == JNI_ABORT free the buffer without copying back the possible changes
-    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
+    return (int64_t) bucketPtr + blockOffset;
 }
 
 
-jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress, jbyteArray buffer)
+jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress)
 {
     
     uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
@@ -484,19 +526,21 @@ jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint
     
     // can add record
     uint8_t canAddRecord = bucketFillCount < bucketBufferArray->maxBucketBlockCount;
+    int64_t blockAddress = -1;
     if (canAddRecord)
     {
         uint32_t blockOffset = getBucketLength(bucketBufferArray, bucketPtr);
         
 //            keyHandler.writeKey(blockAddress + BLOCK_KEY_OFFSET);
 //            valueHandler.writeValue(getBlockValueOffset(blockAddress, maxKeyLength));
-        jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
-        jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
+//        jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
+//        jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
         
-        memcpy(bucketPtr + blockOffset, bufferPtr, lengthOfArray);
+        blockAddress = (int64_t) bucketPtr + blockOffset;
+//        memcpy(bucketPtr + blockOffset, bufferPtr, lengthOfArray);
         
         // mode == JNI_ABORT free the buffer without copying back the possible changes
-        (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
+//        (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
         
 //            setBucketFillCount(bucketAddress, bucketFillCount + 1);
         serialize_int32((uint8_t*) bucketPtr + BUCKET_FILL_COUNT_OFFSET, bucketFillCount + 1);
@@ -515,11 +559,11 @@ jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint
         deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
         if (overflowPtr != 0)
         {
-            return addBlock(env, bucketBufferArray, overflowPtr, buffer);
+            return addBlock(env, bucketBufferArray, overflowPtr);
         }
     }
     
-    return canAddRecord;
+    return blockAddress;
 }
 
 /*
@@ -527,12 +571,12 @@ jboolean addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint
  * Method:    addBlock
  * Signature: (JJ[B)Z
  */
-JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jbyteArray buffer)
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
 {    
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    return addBlock(env, bucketBufferArray, bucketAddress, buffer);
+    return addBlock(env, bucketBufferArray, bucketAddress);
 }
 
 void moveRemainingMemory(struct BucketBufferArray* bucketBufferArray, 

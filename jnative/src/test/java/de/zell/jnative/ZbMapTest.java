@@ -31,14 +31,15 @@
 package de.zell.jnative;
 
 import static de.zell.jnative.BucketBufferArray.ALLOCATION_FACTOR;
-import de.zell.jnative.types.LongKeyHandler;
-import de.zell.jnative.types.LongValueHandler;
 import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
 import static io.zeebe.map.BucketBufferArrayDescriptor.getBlockLength;
-import org.agrona.BitUtil;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import de.zell.jnative.types.LongKeyHandler;
+import de.zell.jnative.types.LongValueHandler;
+import org.agrona.BitUtil;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class ZbMapTest
         @Override
         public long keyHashCode()
         {
-            return (int) getKey() & 1;
+            return (int) theKey & 1;
         }
     }
 
@@ -78,17 +79,17 @@ public class ZbMapTest
 
     public static void putValue(ZbMap<? extends LongKeyHandler, LongValueHandler> zbMap, long key, long value)
     {
-        zbMap.keyHandler.setKey(key);
-        zbMap.valueHandler.setValue(value);
+        zbMap.keyHandler.theKey = key;
+        zbMap.valueHandler.theValue = value;
         zbMap.put();
     }
 
     public static long getValue(ZbMap<LongKeyHandler, LongValueHandler> zbMap, long key, long missingValue)
     {
-        zbMap.keyHandler.setKey(key);
-        zbMap.valueHandler.setValue(missingValue);
+        zbMap.keyHandler.theKey = key;
+        zbMap.valueHandler.theValue = missingValue;
         zbMap.get();
-        return zbMap.valueHandler.getValue();
+        return zbMap.valueHandler.theValue;
     }
 
     @Test

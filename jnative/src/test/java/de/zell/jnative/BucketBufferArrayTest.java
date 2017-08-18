@@ -16,15 +16,13 @@
 package de.zell.jnative;
 
 import static de.zell.jnative.BucketBufferArray.getBucketAddress;
-import de.zell.jnative.types.LongKeyHandler;
-import de.zell.jnative.types.LongValueHandler;
 import static io.zeebe.map.BucketBufferArray.ALLOCATION_FACTOR;
-import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_BUFFER_HEADER_LENGTH;
-import static io.zeebe.map.BucketBufferArrayDescriptor.BUCKET_DATA_OFFSET;
-import static io.zeebe.map.BucketBufferArrayDescriptor.getBlockLength;
-import io.zeebe.map.types.ByteArrayValueHandler;
+import static io.zeebe.map.BucketBufferArrayDescriptor.*;
 import static org.agrona.BitUtil.SIZE_OF_LONG;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import de.zell.jnative.types.LongKeyHandler;
+import de.zell.jnative.types.LongValueHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -181,8 +179,8 @@ public class BucketBufferArrayTest
         BucketBufferArray bucketBufferArray = new BucketBufferArray(1, MAX_KEY_LEN, MAX_VALUE_LEN);
         
         final int bucketBufferCount = 32;
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10L;
+        valueHandler.theValue = 0xFFL;
         for (int i = 0; i < 32 * bucketBufferCount; i++)
         {
             final long newBucketAddress = bucketBufferArray.allocateNewBucket(i, i);
@@ -244,8 +242,8 @@ public class BucketBufferArrayTest
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
 
         // when
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         final boolean wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -266,10 +264,10 @@ public class BucketBufferArrayTest
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(10);
+        assertThat(keyHandler.theKey).isEqualTo(10);
 
         bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
     }
 
     @Test
@@ -279,8 +277,8 @@ public class BucketBufferArrayTest
         final LongKeyHandler keyHandler = new LongKeyHandler();
         final LongValueHandler valueHandler = new LongValueHandler();
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -325,13 +323,13 @@ public class BucketBufferArrayTest
         final LongKeyHandler keyHandler = new LongKeyHandler();
         final LongValueHandler valueHandler = new LongValueHandler();
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
         // when
-        valueHandler.setValue(0xAA);
+        valueHandler.theValue = 0xAA;
         bucketBufferArray.updateValue(valueHandler, newBucketAddress, newBlockOffset);
 
         // then
@@ -341,10 +339,10 @@ public class BucketBufferArrayTest
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(10);
+        assertThat(keyHandler.theKey).isEqualTo(10);
 
         bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xAA);
+        assertThat(valueHandler.theValue).isEqualTo(0xAA);
     }
 
 //    @Test
@@ -469,8 +467,8 @@ public class BucketBufferArrayTest
         final LongValueHandler valueHandler = new LongValueHandler();
         final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(2, 1);
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         bucketBufferArray.addBlock(firstBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -491,10 +489,10 @@ public class BucketBufferArrayTest
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(10);
+        assertThat(keyHandler.theKey).isEqualTo(10);
 
         bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
     }
 
     @Test
@@ -505,10 +503,10 @@ public class BucketBufferArrayTest
         final LongValueHandler valueHandler = new LongValueHandler();
         final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         bucketBufferArray.addBlock(firstBucketAddress, keyHandler, valueHandler);
-        keyHandler.setKey(11);
+        keyHandler.theKey = 11;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
         int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -530,23 +528,23 @@ public class BucketBufferArrayTest
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(11);
+        assertThat(keyHandler.theKey).isEqualTo(11);
 
         bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
 
         newBlockOffset += blockLength;
         assertThat(blockLength).isEqualTo(getBlockLength(MAX_KEY_LEN, MAX_VALUE_LEN));
 
-        keyHandler.setKey(10);
+        keyHandler.theKey = 10;
         keyEquals = bucketBufferArray.keyEquals(keyHandler, newBucketAddress, newBlockOffset);
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, newBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(10);
+        assertThat(keyHandler.theKey).isEqualTo(10);
 
         bucketBufferArray.readValue(valueHandler, newBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
     }
 
     @Test
@@ -557,12 +555,12 @@ public class BucketBufferArrayTest
         final LongValueHandler valueHandler = new LongValueHandler();
         final long firstBucketAddress = bucketBufferArray.allocateNewBucket(1, 1);
         final long newBucketAddress = bucketBufferArray.allocateNewBucket(2, 2);
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         bucketBufferArray.addBlock(firstBucketAddress, keyHandler, valueHandler);
-        keyHandler.setKey(11);
+        keyHandler.theKey = 11;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-        keyHandler.setKey(12);
+        keyHandler.theKey = 12;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -582,15 +580,15 @@ public class BucketBufferArrayTest
         assertThat(bucketBufferArray.getBlockCount()).isEqualTo(3);
 
         // and block is equal to
-        keyHandler.setKey(10);
+        keyHandler.theKey = 10;
         final boolean keyEquals = bucketBufferArray.keyEquals(keyHandler, bucketOverflowPointer, newBlockOffset);
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, bucketOverflowPointer, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(10);
+        assertThat(keyHandler.theKey).isEqualTo(10);
 
         bucketBufferArray.readValue(valueHandler, bucketOverflowPointer, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
     }
 
     @Test
@@ -620,15 +618,15 @@ public class BucketBufferArrayTest
         final long overflowBucketAddress = bucketBufferArray.overflow(newBucketAddress);
         final LongKeyHandler keyHandler = new LongKeyHandler();
         final LongValueHandler valueHandler = new LongValueHandler();
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
-        keyHandler.setKey(11);
+        keyHandler.theKey = 11;
         bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
 
         // when
-        keyHandler.setKey(12);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 12;
+        valueHandler.theValue = 0xFF;
         final boolean wasAdded = bucketBufferArray.addBlock(newBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -647,10 +645,10 @@ public class BucketBufferArrayTest
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, overflowBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(12);
+        assertThat(keyHandler.theKey).isEqualTo(12);
 
         bucketBufferArray.readValue(valueHandler, overflowBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
     }
 
 
@@ -664,8 +662,8 @@ public class BucketBufferArrayTest
         final LongValueHandler valueHandler = new LongValueHandler();
 
         // when
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         final boolean wasAdded = bucketBufferArray.addBlock(overflowBucketAddress, keyHandler, valueHandler);
         final int newBlockOffset = bucketBufferArray.getFirstBlockOffset();
 
@@ -684,10 +682,10 @@ public class BucketBufferArrayTest
         assertThat(keyEquals).isTrue();
 
         bucketBufferArray.readKey(keyHandler, overflowBucketAddress, newBlockOffset);
-        assertThat(keyHandler.getKey()).isEqualTo(10);
+        assertThat(keyHandler.theKey).isEqualTo(10);
 
         bucketBufferArray.readValue(valueHandler, overflowBucketAddress, newBlockOffset);
-        assertThat(valueHandler.getValue()).isEqualTo(0xFF);
+        assertThat(valueHandler.theValue).isEqualTo(0xFF);
     }
 
     @Test
@@ -739,8 +737,8 @@ public class BucketBufferArrayTest
         // when
         int blockCount = 0;
 
-        keyHandler.setKey(10);
-        valueHandler.setValue(0xFF);
+        keyHandler.theKey = 10;
+        valueHandler.theValue = 0xFF;
         for (int i = 0; i < 1000; i++)
         {
             final float expectedLoadFactor = getExpectedLoadFactor(blockCount, i);

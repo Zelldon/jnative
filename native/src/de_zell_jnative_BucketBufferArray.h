@@ -37,6 +37,22 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_allocateNewBucketB
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readLong
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readLong
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    writeLong
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_writeLong
+  (JNIEnv *, jclass, jlong, jlong);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    getBucketBufferCount
  * Signature: (J)I
  */
@@ -125,43 +141,19 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketOverflow
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
- * Method:    keyEquals
- * Signature: (JJI[B)Z
+ * Method:    getBlockAddress
+ * Signature: (JJI)J
  */
-JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
-  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readKey
- * Signature: (JJI[B)V
- */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readKey
-  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    readValue
- * Signature: (JJI[B)V
- */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
-  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    updateValue
- * Signature: (JJI[B)V
- */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_updateValue
-  (JNIEnv *, jobject, jlong, jlong, jint, jbyteArray);
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBlockAddress
+  (JNIEnv *, jobject, jlong, jlong, jint);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    addBlock
- * Signature: (JJ[B)Z
+ * Signature: (JJ)J
  */
-JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
-  (JNIEnv *, jobject, jlong, jlong, jbyteArray);
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
+  (JNIEnv *, jobject, jlong, jlong);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
@@ -169,14 +161,6 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
  * Signature: (JJI)V
  */
 JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlock
-  (JNIEnv *, jobject, jlong, jlong, jint);
-
-/*
- * Class:     de_zell_jnative_BucketBufferArray
- * Method:    removeBlockFromBucket
- * Signature: (JJI)V
- */
-JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_removeBlockFromBucket
   (JNIEnv *, jobject, jlong, jlong, jint);
 
 /*
