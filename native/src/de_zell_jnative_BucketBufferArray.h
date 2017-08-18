@@ -149,6 +149,22 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketOverflow
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readKey
+ * Signature: (JJI)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readKey
+  (JNIEnv *, jobject, jlong, jlong, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    readValue
+ * Signature: (JJI)J
+ */
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_readValue
+  (JNIEnv *, jobject, jlong, jlong, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    getBlockAddress
  * Signature: (JJI)J
  */

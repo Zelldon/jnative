@@ -227,16 +227,24 @@ public class BucketBufferArray implements AutoCloseable
     
     public void readKey(KeyHandler keyHandler,long bucketAddress, int blockOffset)
     {
-        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
-        keyHandler.readKey(blockAddress);
+//        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+//        keyHandler.readKey(blockAddress);
+
+        keyHandler.readKey(readKey(instanceAddress, bucketAddress, blockOffset));
     }
+
+    private native long readKey(long instanceAddress, long bucketAddress, int blockOffset);
     
     
     public void readValue(ValueHandler valueHandler, long bucketAddress, int blockOffset)
     {
-        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
-        valueHandler.readValue(blockAddress + maxKeyLength);
+//        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+//        valueHandler.readValue(blockAddress + maxKeyLength);
+
+        valueHandler.readValue(readValue(instanceAddress, bucketAddress, blockOffset));
     }
+
+    private native long readValue(long instanceAddress, long bucketAddress, int blockOffset);
     
     public void updateValue(ValueHandler handler, long bucketAddress, int blockOffset)
     {

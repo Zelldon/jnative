@@ -40,7 +40,7 @@ public class LongValueHandler implements ValueHandler
     @Override
     public void readValue(long valueAddr)
     {
-        theValue = BucketBufferArray.readLong(valueAddr);
+        theValue = valueAddr;
     }
 
 }

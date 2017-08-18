@@ -53,7 +53,7 @@ public class LongKeyHandler implements KeyHandler
     @Override
     public void readKey(long keyAddr)
     {
-        theKey = BucketBufferArray.readLong(keyAddr);
+        theKey = keyAddr;
     }
 
     @Override

@@ -27,7 +27,7 @@ import org.agrona.BitUtil;
 public class ZbMapMain
 {
 
-    public static final int DATA_COUNT = 20_000_000;
+    public static final int DATA_COUNT = 50_000_000;
     
     public static void main(String [] args)
     {
