@@ -170,6 +170,8 @@ public class BucketBufferArray implements AutoCloseable
         return maxBucketLength;
     }
     
+    
+    private native int getBucketBufferBucketCount(long instanceAddress, int bucketBufferId);
 
     // BUCKET //////////////////////////////////////////////////////////////////////
     public int getBucketFillCount(long bucketAddress)
@@ -325,16 +327,13 @@ public class BucketBufferArray implements AutoCloseable
     
     private native void relocateBlock(long instanceAddress, long bucketAddress, int blockOffset, long newBucketAddress);
 
-
-
-
     public String toString()
     {
         final StringBuilder builder = new StringBuilder();
         final long bucketBufferCount = getBucketBufferCount();
         for (int i = 0; i < bucketBufferCount; i++)
         {
-            final int bucketCount = getBucketCount(i);
+            final int bucketCount = getBucketBufferBucketCount(instanceAddress, i);
             for (int j = 0; j < bucketCount; j++)
             {
                 final int offset = BUCKET_BUFFER_HEADER_LENGTH + j * getMaxBucketLength();

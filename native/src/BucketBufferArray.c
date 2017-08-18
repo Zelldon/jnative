@@ -350,6 +350,17 @@ JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
     }
 }
 
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketBufferBucketCount
+(JNIEnv * env, jobject obj, jlong instanceAddress, jint bucketBufferId) {
+    
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    int32_t bucketCount = 0;
+    deserialize_int32(bucketBufferArray->realAddresses[bucketBufferId], &bucketCount);
+    
+    return bucketCount;
+}
+
 int32_t getBucketFillCount(uint8_t* bucketPtr)
 {
     int32_t bucketFillCount = 0;

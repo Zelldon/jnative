@@ -117,6 +117,14 @@ JNIEXPORT jfloat JNICALL Java_de_zell_jnative_BucketBufferArray_getLoadFactor
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
+ * Method:    getBucketBufferBucketCount
+ * Signature: (JI)I
+ */
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray_getBucketBufferBucketCount
+  (JNIEnv *, jobject, jlong, jint);
+
+/*
+ * Class:     de_zell_jnative_BucketBufferArray
  * Method:    getBucketFillCount
  * Signature: (JJ)I
  */
