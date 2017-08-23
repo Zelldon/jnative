@@ -15,19 +15,13 @@
  */
 package de.zell.jnative;
 
-import static org.agrona.BitUtil.SIZE_OF_LONG;
-
-import de.zell.jnative.types.LongKeyHandler;
-import de.zell.jnative.types.LongValueHandler;
-import org.agrona.BitUtil;
-
 /**
  *
  */
 public class ZbMapMain
 {
 
-    public static final int DATA_COUNT = 50_000_000;
+    public static final int DATA_COUNT = 10_000_000;
     
     public static void main(String [] args)
     {
@@ -35,13 +29,18 @@ public class ZbMapMain
         // given
         final Long2LongZbMap zbMap = new Long2LongZbMap();
 
+        System.out.print("Putting...");
         // when
+        long start = System.currentTimeMillis();
         for (int i = 0; i < DATA_COUNT; i++)
         {
             zbMap.put(i, i);
         }
+        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
 
         // then
+        System.out.print("Getting...");
+        start = System.currentTimeMillis();
         for (int i = 0; i < DATA_COUNT; i++)
         {
             if (zbMap.get(i, -1) == -1)
@@ -49,5 +48,6 @@ public class ZbMapMain
                 throw new IllegalStateException("Missing value for key: " + i);
             }
         }
+        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
     }
 }

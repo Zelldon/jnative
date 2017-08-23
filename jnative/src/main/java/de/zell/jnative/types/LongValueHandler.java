@@ -43,4 +43,11 @@ public class LongValueHandler implements ValueHandler
         theValue = valueAddr;
     }
 
+    @Override
+    public long getValue() {
+        return theValue;
+    }
+    
+    
+
 }

@@ -22,6 +22,10 @@ public interface ValueHandler
     void readValue(long blockAddr);
     
     void writeValue(long blockAddr);
+    
+    
+    
+    long getValue();
 //
 //    long getValue();
 //

@@ -67,4 +67,11 @@ public class LongKeyHandler implements KeyHandler
     {
         return BucketBufferArray.readLong(keyAddr) == theKey;
     }
+
+    @Override
+    public long getKey() {
+        return theKey;
+    }
+    
+    
 }

@@ -522,8 +522,26 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBlockAddress
     return (int64_t) bucketPtr + blockOffset;
 }
 
+JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jlong key)
+{
+    
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+    
+    int64_t currentKey = 0;
+    deserialize_int64(bucketPtr + blockOffset, &currentKey);
+    printf("Correct value %ld\n", currentKey);
+    
+    int64_t value = *((int64_t*) (bucketPtr + blockOffset));
+    printf("Direct access %ld\n", value);
+    
+    printf("Equals %d", value == key);
+    return value == key;
+//    return currentKey == key;    
+}
 
-jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress)
+jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress, jlong key, jlong value)
 {
     
     uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
@@ -542,6 +560,10 @@ jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_
 //        jsize lengthOfArray = (*env)->GetArrayLength(env, buffer);
         
         blockAddress = (int64_t) bucketPtr + blockOffset;
+//        serialize_int64((uint8_t*) blockAddress, key);
+        *(bucketPtr + blockOffset) = key;
+        
+        serialize_int64((uint8_t*) blockAddress + bucketBufferArray->maxKeyLength, value);
 //        memcpy(bucketPtr + blockOffset, bufferPtr, lengthOfArray);
         
         // mode == JNI_ABORT free the buffer without copying back the possible changes
@@ -564,7 +586,7 @@ jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_
         deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
         if (overflowPtr != 0)
         {
-            return addBlock(env, bucketBufferArray, overflowPtr);
+            return addBlock(env, bucketBufferArray, overflowPtr, key, value);
         }
     }
     
@@ -577,11 +599,11 @@ jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_
  * Signature: (JJ[B)Z
  */
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_addBlock
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress)
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jlong key, jlong value)
 {    
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     
-    return addBlock(env, bucketBufferArray, bucketAddress);
+    return addBlock(env, bucketBufferArray, bucketAddress, key, value);
 }
 
 void moveRemainingMemory(struct BucketBufferArray* bucketBufferArray, 

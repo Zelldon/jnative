@@ -26,6 +26,9 @@ public interface KeyHandler
     void readKey(long blockAddr);
     
     void writeKey(long blockAddr);
+    
+    
+    long getKey();
 //
 //    long getKey();
 //

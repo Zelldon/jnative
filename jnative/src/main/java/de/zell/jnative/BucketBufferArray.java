@@ -221,9 +221,16 @@ public class BucketBufferArray implements AutoCloseable
 
     public boolean keyEquals(KeyHandler keyhandler, long bucketAddress, int blockOffset)
     {
-        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
-        return keyhandler.keyEquals(blockAddress);
+//        final long blockAddress = getBlockAddress(instanceAddress, bucketAddress, blockOffset);
+//        
+//        
+//        return keyhandler.keyEquals(blockAddress);
+        
+        return keyEquals(instanceAddress, bucketAddress, blockOffset, keyhandler.getKey());
     }
+    
+    private native boolean keyEquals(long instanceAddress, long bucketAddress, int blockOffset, long key);
+    
     
     public void readKey(KeyHandler keyHandler,long bucketAddress, int blockOffset)
     {
@@ -264,19 +271,27 @@ public class BucketBufferArray implements AutoCloseable
     public boolean addBlock(long bucketAddress, KeyHandler keyhandler, ValueHandler valueHandler)
     {
 
-        final long blockAddress = addBlock(instanceAddress, bucketAddress);
+//        final long start = System.nanoTime();
+        final long blockAddress = addBlock(instanceAddress, bucketAddress, keyhandler.getKey(), valueHandler.getValue());
 
         boolean foundFreeBlock = blockAddress != -1;
-        if (foundFreeBlock)
-        {
-            keyhandler.writeKey(blockAddress);
-            valueHandler.writeValue(blockAddress + maxKeyLength);
-        }
+//        if (foundFreeBlock)
+//        {
+//            keyhandler.writeKey(blockAddress);
+//            valueHandler.writeValue(blockAddress + maxKeyLength);
+//        }
+
+//
+//        final long diff = System.nanoTime() - start;
+//        if (diff > 10)
+//        {
+//            System.out.println("Add block takes " + diff);
+//        }
 
         return foundFreeBlock;
     }
     
-    private native long addBlock(long instanceAddress, long bucketAddress);
+    private native long addBlock(long instanceAddress, long bucketAddress, long key, long value);
 
     public void removeBlock(long bucketAddress, int blockOffset)
     {
@@ -323,7 +338,18 @@ public class BucketBufferArray implements AutoCloseable
      */
     public long allocateNewBucket(int newBucketId, int newBucketDepth)
     {        
-        return allocateNewBucket(instanceAddress, newBucketId, newBucketDepth);
+        
+        final long start = System.nanoTime();
+        
+        final long allocateNewBucket = allocateNewBucket(instanceAddress, newBucketId, newBucketDepth);
+        
+        final long diff = System.nanoTime() - start;
+        if (diff > 10)
+        {
+            System.out.println("alloc new Bucket takes " + diff);
+        }
+        
+        return allocateNewBucket;
     }
 
     private native long allocateNewBucket(long instanceAddress, int newBucketId, int newBucketDepth);

@@ -283,6 +283,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
                 {
                     bucketAddress = block.getBucketAddress();
                     final int blockOffset = block.getBlockOffset();
+                    System.out.println("update");
                     bucketBufferArray.updateValue(valueHandler, bucketAddress, blockOffset);
                     modCount += 1;
                     isUpdated = true;
@@ -349,6 +350,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
     private Block findBlockInBucket(long bucketAddress)
     {
+//        final long start = System.nanoTime();
         final Block foundBlock = blockHelperInstance;
         foundBlock.reset();
         boolean keyFound = false;
@@ -375,6 +377,13 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
             bucketAddress = bucketBufferArray.getBucketOverflowPointer(bucketAddress);
         } while (!keyFound && bucketAddress > 0);
+        
+        
+//        final long diff = System.nanoTime() - start;
+//        if (diff > 10)
+//        {
+//            System.out.println("Found block takes " + diff);
+//        }
         return foundBlock;
     }
 
@@ -423,6 +432,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
     private void createNewBucket(long filledBucketAddress, int bucketDepth, int newBucketId, int newBucketDepth)
     {
+        final long start = System.nanoTime();
         // update filled block depth
         bucketBufferArray.setBucketDepth(filledBucketAddress, newBucketDepth);
 
@@ -437,6 +447,11 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
         for (int i = newBucketId; i < tableSize; i += mapDiff)
         {
             hashTable.setBucketAddress(i, newBucketAddress);
+        }
+        final long diff = System.nanoTime() - start;
+        if (diff > 10)
+        {
+            System.out.println("Create new Bucket takes " + diff);
         }
     }
 
