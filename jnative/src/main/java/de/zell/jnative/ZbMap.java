@@ -265,6 +265,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
     protected boolean put()
     {
+        System.out.println("Key " + keyHandler.getKey() + " hash " + keyHandler.keyHashCode());
         final long keyHashCode = keyHandler.keyHashCode();
         int bucketId = getBucketId(keyHashCode);
         boolean isUpdated = false;
@@ -275,6 +276,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
         {
             long bucketAddress = hashTable.getBucketAddress(bucketId);
 
+             
             if (scanForKey)
             {
                 final Block block = findBlockInBucket(bucketAddress);
@@ -297,7 +299,9 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
                 if (!isPut)
                 {
                     splitBucket(bucketAddress);
+                    System.out.println("bucket id " + bucketId);
                     bucketId = getBucketId(keyHashCode);
+                    System.out.println("bucket id " + bucketId);
                 }
 
                 modCount += 1;
@@ -441,13 +445,14 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
     {
 //        final long start = System.nanoTime();
         // update filled block depth
-        bucketBufferArray.setBucketDepth(filledBucketAddress, newBucketDepth);
-
-        // create new bucket
-        final long newBucketAddress = bucketBufferArray.allocateNewBucket(newBucketId, newBucketDepth);
-
-        // distribute entries into correct blocks
-        distributeEntries(filledBucketAddress, newBucketAddress, bucketDepth);
+//        bucketBufferArray.setBucketDepth(filledBucketAddress, newBucketDepth);
+//
+//        // create new bucket
+//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(newBucketId, newBucketDepth);
+//
+//        // distribute entries into correct blocks
+//        distributeEntries(filledBucketAddress, newBucketAddress, bucketDepth);
+       final long newBucketAddress = bucketBufferArray.splitBucket(filledBucketAddress, newBucketId, newBucketDepth);
 
         // update map
         final int mapDiff = 1 << newBucketDepth;
@@ -462,37 +467,37 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 //        }
     }
 
-    private void distributeEntries(long filledBucketAddress, long newBucketAddress, int bucketDepth)
-    {
-        do
-        {
-            final int bucketFillCount = bucketBufferArray.getBucketFillCount(filledBucketAddress);
-            final int splitMask = 1 << bucketDepth;
-
-            int blockOffset = BUCKET_DATA_OFFSET;
-            int blocksVisited = 0;
-
-            while (blocksVisited < bucketFillCount)
-            {
-                final int blockLength = bucketBufferArray.getBlockLength();
-
-                bucketBufferArray.readKey(splitKeyHandler, filledBucketAddress, blockOffset);
-                final long keyHashCode = splitKeyHandler.keyHashCode();
-
-                if ((keyHashCode & splitMask) == splitMask)
-                {
-                    bucketBufferArray.relocateBlock(filledBucketAddress, blockOffset, newBucketAddress);
-                }
-                else
-                {
-                    blockOffset += blockLength;
-                }
-
-                blocksVisited++;
-            }
-            filledBucketAddress = bucketBufferArray.getBucketOverflowPointer(filledBucketAddress);
-        } while (filledBucketAddress != 0);
-    }
+//    private void distributeEntries(long filledBucketAddress, long newBucketAddress, int bucketDepth)
+//    {
+//        do
+//        {
+//            final int bucketFillCount = bucketBufferArray.getBucketFillCount(filledBucketAddress);
+//            final int splitMask = 1 << bucketDepth;
+//
+//            int blockOffset = BUCKET_DATA_OFFSET;
+//            int blocksVisited = 0;
+//
+//            while (blocksVisited < bucketFillCount)
+//            {
+//                final int blockLength = bucketBufferArray.getBlockLength();
+//
+//                bucketBufferArray.readKey(splitKeyHandler, filledBucketAddress, blockOffset);
+//                final long keyHashCode = splitKeyHandler.keyHashCode();
+//
+//                if ((keyHashCode & splitMask) == splitMask)
+//                {
+//                    bucketBufferArray.relocateBlock(filledBucketAddress, blockOffset, newBucketAddress);
+//                }
+//                else
+//                {
+//                    blockOffset += blockLength;
+//                }
+//
+//                blocksVisited++;
+//            }
+//            filledBucketAddress = bucketBufferArray.getBucketOverflowPointer(filledBucketAddress);
+//        } while (filledBucketAddress != 0);
+//    }
 
     public BucketBufferArray getBucketBufferArray()
     {

@@ -969,3 +969,78 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBuc
     return foundBlockOffSet;
 }
 
+jlong getKeyHashCode(jlong key)
+{
+    return (int)(key ^ (key >> 32));
+}
+
+
+JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong filledBucketAddress, jint newBucketId, jint newBucketDepth)  
+
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, filledBucketAddress);
+    
+    
+//        bucketBufferArray.setBucketDepth(filledBucketAddress, newBucketDepth);
+    serialize_int32(bucketPtr + BUCKET_DEPTH_OFFSET, newBucketDepth);    
+    
+//        // create new bucket
+//        final long newBucketAddress = bucketBufferArray.allocateNewBucket(newBucketId, newBucketDepth);
+    jlong newBucketAddress = allocateNewBucket(env, bucketBufferArray, newBucketId, newBucketDepth);
+    printf("new bucket addr %ld\n", newBucketAddress);
+    
+//
+//
+//        // distribute entries into correct blocks
+//        distributeEntries(filledBucketAddress, newBucketAddress, bucketDepth);
+//        
+        do
+        {
+
+            
+            int32_t bucketFillCount = getBucketFillCount(bucketPtr);
+            printf("fill count: %d", bucketFillCount );
+            int32_t splitMask = 1 << newBucketDepth;
+
+            int blockOffset = BUCKET_DATA_OFFSET;
+            int blocksVisited = 0;
+
+            while (blocksVisited < bucketFillCount)
+            {
+                int blockLength = bucketBufferArray->maxKeyLength + bucketBufferArray->maxValueLength;
+
+                
+//                bucketBufferArray.readKey(splitKeyHandler, filledBucketAddress, blockOffset);
+                uint8_t* keyPtr = (uint8_t*) (getBucketAddress(env, bucketBufferArray, filledBucketAddress) + blockOffset);        
+                jlong key = 0;
+                deserialize_int64(keyPtr, &key);
+                
+                // final long keyHashCode = splitKeyHandler.keyHashCode();
+                long keyHashCode = getKeyHashCode(key);
+                printf("key %ld hash code: %ld\n", key, keyHashCode);
+
+                if ((keyHashCode & splitMask) == splitMask)
+                {
+                    printf("relocate %ld\n", key);
+//                    bucketBufferArray.relocateBlock(filledBucketAddress, blockOffset, newBucketAddress);
+                    relocate(env, bucketBufferArray, filledBucketAddress, blockOffset, newBucketAddress);
+                }
+                else
+                {
+                    blockOffset += blockLength;
+                }
+
+                blocksVisited++;
+            }
+            
+            
+//            filledBucketAddress = bucketBufferArray.getBucketOverflowPointer(filledBucketAddress);
+            int64_t overflowPtr = 0;
+            deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
+
+            filledBucketAddress = overflowPtr; 
+        } while (filledBucketAddress != 0);
+        return newBucketAddress;
+}

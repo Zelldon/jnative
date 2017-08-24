@@ -367,7 +367,15 @@ public class BucketBufferArray implements AutoCloseable
         return __findBlockInBucket(instanceAddress, bucketAddress, key);
     }
     
-    public native int __findBlockInBucket(long instanceAddress, long bucketAddress, long key);
+    private native int __findBlockInBucket(long instanceAddress, long bucketAddress, long key);
+    
+    public long splitBucket(long filledBucketAddress, int newBucketId, int newBucketDepth)
+    {
+        return __splitBucket(instanceAddress, filledBucketAddress, newBucketId, newBucketDepth);
+    }
+    
+    private native long __splitBucket(long instanceAddress, long filledBucketAddress, int newBucketId, int newBucketDepth);
+            
 
     public String toString()
     {
