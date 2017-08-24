@@ -339,16 +339,16 @@ public class BucketBufferArray implements AutoCloseable
     public long allocateNewBucket(int newBucketId, int newBucketDepth)
     {        
         
-        final long start = System.nanoTime();
+//        final long start = System.nanoTime();
         
         final long allocateNewBucket = allocateNewBucket(instanceAddress, newBucketId, newBucketDepth);
         
-        final long diff = System.nanoTime() - start;
-        if (diff > 10)
-        {
-            System.out.println("alloc new Bucket takes " + diff);
-        }
-        
+//        final long diff = System.nanoTime() - start;
+//        if (diff > 10)
+//        {
+//            System.out.println("alloc new Bucket takes " + diff);
+//        }
+//        
         return allocateNewBucket;
     }
 
@@ -360,6 +360,14 @@ public class BucketBufferArray implements AutoCloseable
     }
     
     private native void relocateBlock(long instanceAddress, long bucketAddress, int blockOffset, long newBucketAddress);
+    
+    
+    public int findBlockInBucket(long bucketAddress)
+    {
+        return __findBlockInBucket(instanceAddress, bucketAddress);
+    }
+    
+    public native int __findBlockInBucket(long instanceAddress, long bucketAddress);
 
     public String toString()
     {

@@ -529,14 +529,14 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
     uint8_t* bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
     
-    int64_t currentKey = 0;
-    deserialize_int64(bucketPtr + blockOffset, &currentKey);
-    printf("Correct value %ld\n", currentKey);
+//    int64_t currentKey = 0;
+//    deserialize_int64(bucketPtr + blockOffset, &currentKey);
+//    printf("Correct value %ld\n", currentKey);
     
     int64_t value = *((int64_t*) (bucketPtr + blockOffset));
-    printf("Direct access %ld\n", value);
+//    printf("Direct access %ld\n", value);
     
-    printf("Equals %d", value == key);
+//    printf("Equals %d", value == key);
     return value == key;
 //    return currentKey == key;    
 }
@@ -561,7 +561,7 @@ jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_
         
         blockAddress = (int64_t) bucketPtr + blockOffset;
 //        serialize_int64((uint8_t*) blockAddress, key);
-        *(bucketPtr + blockOffset) = key;
+        *((int64_t*)(bucketPtr + blockOffset)) = key;
         
         serialize_int64((uint8_t*) blockAddress + bucketBufferArray->maxKeyLength, value);
 //        memcpy(bucketPtr + blockOffset, bufferPtr, lengthOfArray);

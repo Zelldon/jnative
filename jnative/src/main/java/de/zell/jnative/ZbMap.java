@@ -432,7 +432,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
     private void createNewBucket(long filledBucketAddress, int bucketDepth, int newBucketId, int newBucketDepth)
     {
-        final long start = System.nanoTime();
+//        final long start = System.nanoTime();
         // update filled block depth
         bucketBufferArray.setBucketDepth(filledBucketAddress, newBucketDepth);
 
@@ -448,11 +448,11 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
         {
             hashTable.setBucketAddress(i, newBucketAddress);
         }
-        final long diff = System.nanoTime() - start;
-        if (diff > 10)
-        {
-            System.out.println("Create new Bucket takes " + diff);
-        }
+//        final long diff = System.nanoTime() - start;
+//        if (diff > 10)
+//        {
+//            System.out.println("Create new Bucket takes " + diff);
+//        }
     }
 
     private void distributeEntries(long filledBucketAddress, long newBucketAddress, int bucketDepth)

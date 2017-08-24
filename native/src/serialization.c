@@ -18,40 +18,54 @@
 // serialize ///////////////////////////////////////////////////////////////////
 
 uint8_t* serialize_int64(uint8_t * buffer, int64_t value) {
-  buffer[7] = value >> 56;
-  buffer[6] = value >> 48;
-  buffer[5] = value >> 40;
-  buffer[4] = value >> 32;
-  buffer[3] = value >> 24;
-  buffer[2] = value >> 16;
-  buffer[1] = value >> 8;
-  buffer[0] = value;
+//  buffer[7] = value >> 56;
+//  buffer[6] = value >> 48;
+//  buffer[5] = value >> 40;
+//  buffer[4] = value >> 32;
+//  buffer[3] = value >> 24;
+//  buffer[2] = value >> 16;
+//  buffer[1] = value >> 8;
+//  buffer[0] = value;
+  
+  *((int64_t*) buffer) = value;
   return buffer + 8;
 }
 
 uint8_t* serialize_int32(uint8_t * buffer, int32_t value) {
-  buffer[3] = value >> 24;
-  buffer[2] = value >> 16;
-  buffer[1] = value >> 8;
-  buffer[0] = value;
+//  buffer[3] = value >> 24;
+//  buffer[2] = value >> 16;
+//  buffer[1] = value >> 8;
+//  buffer[0] = value;
+  
+  
+  *((int32_t*) buffer) = value;
   return buffer + 4;
 }
-
-uint8_t* serialize_int16(uint8_t * buffer, int16_t value) {
-  buffer[1] = value >> 8;
-  buffer[0] = value;
-  return buffer + 2;
-}
-
-uint8_t* serialize_int8(uint8_t * buffer, int8_t value) {
-  buffer[0] = value;
-  return buffer + 1;
-}
+//
+//uint8_t* serialize_int16(uint8_t * buffer, int16_t value) {
+//  buffer[1] = value >> 8;
+//  buffer[0] = value;
+//  return buffer + 2;
+//}
+//
+//uint8_t* serialize_int8(uint8_t * buffer, int8_t value) {
+//  buffer[0] = value;
+//  return buffer + 1;
+//}
 
 
 // deserialize /////////////////////////////////////////////////////////////////
 
 uint8_t* deserialize_int64(uint8_t * buffer, int64_t* value) {
+//  *value = 0;
+//  *value |= (int64_t) buffer[7] << 56;
+//  *value |= (int64_t) buffer[6] << 48;
+//  *value |= (int64_t) buffer[5] << 40;
+//  *value |= (int64_t) buffer[4] << 32;
+//  *value |= (int64_t) buffer[3] << 24;
+//  *value |= (int64_t) buffer[2] << 16;
+//  *value |= (int64_t) buffer[1] << 8;
+//  *value |= (int64_t) buffer[0];
   *value = *((int64_t*) buffer);
   return buffer + 8;
 }
@@ -64,15 +78,15 @@ uint8_t* deserialize_int32(uint8_t * buffer, int32_t* value) {
   *value |= buffer[0];
   return buffer + 4;
 }
-
-uint8_t* deserialize_int16(uint8_t * buffer, int16_t* value) {
-  *value = 0;
-  *value |= buffer[1] << 8;
-  *value |= buffer[0];
-  return buffer + 2;
-}
-
-uint8_t* deserialize_int8(uint8_t * buffer, uint8_t* value) {
-  *value = buffer[0];
-  return buffer + 1;
-}
+//
+//uint8_t* deserialize_int16(uint8_t * buffer, int16_t* value) {
+//  *value = 0;
+//  *value |= buffer[1] << 8;
+//  *value |= buffer[0];
+//  return buffer + 2;
+//}
+//
+//uint8_t* deserialize_int8(uint8_t * buffer, uint8_t* value) {
+//  *value = buffer[0];
+//  return buffer + 1;
+//}
