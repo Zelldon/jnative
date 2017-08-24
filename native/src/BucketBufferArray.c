@@ -522,6 +522,12 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_getBlockAddress
     return (int64_t) bucketPtr + blockOffset;
 }
 
+char keyEquals(struct BucketBufferArray* bucketBufferArray, uint8_t* bucketPtr, int blockOffset, jlong key)
+{
+    int64_t value = *((int64_t*) (bucketPtr + blockOffset));
+    return value == key;    
+}
+
 JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
 (JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jint blockOffset, jlong key)
 {
@@ -533,13 +539,22 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray_keyEquals
 //    deserialize_int64(bucketPtr + blockOffset, &currentKey);
 //    printf("Correct value %ld\n", currentKey);
     
-    int64_t value = *((int64_t*) (bucketPtr + blockOffset));
 //    printf("Direct access %ld\n", value);
     
 //    printf("Equals %d", value == key);
-    return value == key;
+    
+    
+    
 //    return currentKey == key;    
+    
+    
+//    int64_t value = *((int64_t*) (bucketPtr + blockOffset));
+//    return value == key;
+    
+    return keyEquals(bucketBufferArray, bucketPtr, blockOffset, key);
 }
+
+
 
 jlong addBlock(JNIEnv *env, struct BucketBufferArray* bucketBufferArray, uint64_t bucketAddress, jlong key, jlong value)
 {
@@ -905,4 +920,52 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_relocateBlock
 //        return (float) blockCount / (float) (bucketCount * maxBucketBlockCount);
 //    }
 //}
+
+
+JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBucket
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jlong key)
+{
+    struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    
+    int foundBlockOffSet = -1;
+    
+    char keyFound = 0;
+//    
+//     final Block foundBlock = blockHelperInstance;
+//        foundBlock.reset();
+//        boolean keyFound = false;
+
+//    printf("search for %ld\n", key);
+    do
+    {
+//            printf("searching bucket..%ld\n", bucketAddress);
+        uint8_t *bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, bucketAddress);
+        int bucketFillCount = getBucketFillCount(bucketPtr);
+        int blockOffset = BUCKET_HEADER_LENGTH;
+        int blocksVisited = 0;
+
+        while (!keyFound && blocksVisited < bucketFillCount)
+        {
+            keyFound = keyEquals(bucketBufferArray, bucketPtr, blockOffset, key);
+
+            if (keyFound)
+            {
+//                printf("found on block offset %d\n", blockOffset);
+                foundBlockOffSet = blockOffset;
+            }
+            
+            blockOffset += bucketBufferArray->maxKeyLength + bucketBufferArray->maxValueLength;
+            blocksVisited++;
+        }
+
+        int64_t overflowPtr = 0;
+        deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
+        
+        bucketAddress = overflowPtr;        
+//        printf("check overflow ptr %ld\n", overflowPtr);
+    } while (!keyFound && bucketAddress > 0);
+
+//    printf("end search!");
+    return foundBlockOffSet;
+}
 

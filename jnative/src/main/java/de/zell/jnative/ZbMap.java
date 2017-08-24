@@ -350,41 +350,48 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
 
     private Block findBlockInBucket(long bucketAddress)
     {
-//        final long start = System.nanoTime();
-        final Block foundBlock = blockHelperInstance;
-        foundBlock.reset();
-        boolean keyFound = false;
-
-        do
-        {
-            
-            final int bucketFillCount = bucketBufferArray.getBucketFillCount(bucketAddress);
-            int blockOffset = bucketBufferArray.getFirstBlockOffset();
-            int blocksVisited = 0;
-
-            while (!keyFound && blocksVisited < bucketFillCount)
-            {
-                keyFound = bucketBufferArray.keyEquals(keyHandler, bucketAddress, blockOffset);
-
-                if (keyFound)
-                {
-                    foundBlock.set(bucketAddress, blockOffset);
-                }
-
-                blockOffset += bucketBufferArray.getBlockLength();
-                blocksVisited++;
-            }
-
-            bucketAddress = bucketBufferArray.getBucketOverflowPointer(bucketAddress);
-        } while (!keyFound && bucketAddress > 0);
         
-        
-//        final long diff = System.nanoTime() - start;
-//        if (diff > 10)
+        final int blockOffset = bucketBufferArray.findBlockInBucket(bucketAddress, keyHandler.getKey());
+        blockHelperInstance.reset();
+        blockHelperInstance.set(bucketAddress, blockOffset);
+        return blockHelperInstance;
+//        
+//        
+////        final long start = System.nanoTime();
+//        final Block foundBlock = blockHelperInstance;
+//        foundBlock.reset();
+//        boolean keyFound = false;
+//
+//        do
 //        {
-//            System.out.println("Found block takes " + diff);
-//        }
-        return foundBlock;
+//            
+//            final int bucketFillCount = bucketBufferArray.getBucketFillCount(bucketAddress);
+//            int blockOffset = bucketBufferArray.getFirstBlockOffset();
+//            int blocksVisited = 0;
+//
+//            while (!keyFound && blocksVisited < bucketFillCount)
+//            {
+//                keyFound = bucketBufferArray.keyEquals(keyHandler, bucketAddress, blockOffset);
+//
+//                if (keyFound)
+//                {
+//                    foundBlock.set(bucketAddress, blockOffset);
+//                }
+//
+//                blockOffset += bucketBufferArray.getBlockLength();
+//                blocksVisited++;
+//            }
+//
+//            bucketAddress = bucketBufferArray.getBucketOverflowPointer(bucketAddress);
+//        } while (!keyFound && bucketAddress > 0);
+//        
+//        
+////        final long diff = System.nanoTime() - start;
+////        if (diff > 10)
+////        {
+////            System.out.println("Found block takes " + diff);
+////        }
+//        return foundBlock;
     }
 
     /**
