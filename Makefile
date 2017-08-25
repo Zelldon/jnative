@@ -10,7 +10,7 @@ javah: native/src/de_zell_jnative_BucketBufferArray.h
 	javah -classpath jnative/src/main/java -d native/src de.zell.jnative.BucketBufferArray
 
 ccompile: javah
-	gcc -I'${JAVA}' \
+	gcc -g -I'${JAVA}' \
 	    -I'${JAVA}/linux' \
 	    -Wall -Werror \
 	    -fPIC \
@@ -18,7 +18,7 @@ ccompile: javah
 	    -c native/src/*.h native/src/*.c
 
 shared-lib: ccompile
-	gcc -shared -o libnativeMap.so *.o
+	gcc -g -shared -o libnativeMap.so *.o
 
 mv-lib: shared-lib
 	mv libnativeMap.so jnative/src/main/resources/lib

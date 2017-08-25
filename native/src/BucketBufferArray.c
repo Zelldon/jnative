@@ -998,8 +998,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
 //        
         do
         {
-
-            
+            bucketPtr = (uint8_t*) getBucketAddress(env, bucketBufferArray, filledBucketAddress);            
             int32_t bucketFillCount = getBucketFillCount(bucketPtr);
 //            printf("fill count: %d", bucketFillCount );
             int32_t splitMask = 1 << (newBucketDepth -1);
@@ -1041,6 +1040,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
             int64_t overflowPtr = 0;
             deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
 
+            printf("Overflowptr: %ld " ,overflowPtr);
             filledBucketAddress = overflowPtr; 
         } while (filledBucketAddress != 0);
         return newBucketAddress;

@@ -15,6 +15,10 @@
  */
 package de.zell.jnative;
 
+import de.zell.jnative.types.LongKeyHandler;
+import de.zell.jnative.types.LongValueHandler;
+import static org.agrona.BitUtil.SIZE_OF_LONG;
+
 /**
  *
  */
@@ -27,27 +31,58 @@ public class ZbMapMain
     {
 
         // given
-        final Long2LongZbMap zbMap = new Long2LongZbMap();
-
-        System.out.print("Putting...");
-        // when
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < DATA_COUNT; i++)
+//        final Long2LongZbMap zbMap = new Long2LongZbMap();
+//
+//        System.out.print("Putting...");
+//        // when
+//        long start = System.currentTimeMillis();
+//        for (int i = 0; i < DATA_COUNT; i++)
+//        {
+//            zbMap.put(i, i);
+//        }
+//        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
+//
+//        // then
+//        System.out.print("Getting...");
+//        start = System.currentTimeMillis();
+//        for (int i = 0; i < DATA_COUNT; i++)
+//        {
+//            if (zbMap.get(i, -1) == -1)
+//            {
+//                throw new IllegalStateException("Missing value for key: " + i);
+//            }
+//        }
+//        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
+        
+        final Long2LongZbMap zbMap  = new Long2LongZbMap(2, 1);
+        zbMap.setMaxTableSize(8);
+        for (int i = 0; i < 4; i++)
         {
-            zbMap.put(i, i);
+            zbMap.put(i * 8, i);
         }
-        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
 
-        // then
-        System.out.print("Getting...");
-        start = System.currentTimeMillis();
-        for (int i = 0; i < DATA_COUNT; i++)
-        {
-            if (zbMap.get(i, -1) == -1)
+        // when
+        zbMap.put(32, 4);
+
+//        // then overflow was used to add entries
+        
+            if (zbMap.bucketCount() != 8)
             {
-                throw new IllegalStateException("Missing value for key: " + i);
+                throw new IllegalStateException("Bucket count wrong");
+            }
+        
+            
+            if (zbMap.getBucketBufferArray().getBlockCount() != 5)
+            {
+                throw new IllegalStateException("block count wrong");
+            }
+            
+        for (int i = 0; i <= 4; i++)
+        {
+            if (zbMap.get(i * 8, -1) == -1)
+            {
+                throw new IllegalStateException("Missing value for key: " + i * 8);
             }
         }
-        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
     }
 }
