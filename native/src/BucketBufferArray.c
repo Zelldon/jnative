@@ -989,7 +989,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
 //        // create new bucket
 //        final long newBucketAddress = bucketBufferArray.allocateNewBucket(newBucketId, newBucketDepth);
     jlong newBucketAddress = allocateNewBucket(env, bucketBufferArray, newBucketId, newBucketDepth);
-    printf("new bucket addr %ld\n", newBucketAddress);
+//    printf("new bucket addr %ld\n", newBucketAddress);
     
 //
 //
@@ -1001,8 +1001,8 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
 
             
             int32_t bucketFillCount = getBucketFillCount(bucketPtr);
-            printf("fill count: %d", bucketFillCount );
-            int32_t splitMask = 1 << newBucketDepth;
+//            printf("fill count: %d", bucketFillCount );
+            int32_t splitMask = 1 << (newBucketDepth -1);
 
             int blockOffset = BUCKET_DATA_OFFSET;
             int blocksVisited = 0;
@@ -1019,11 +1019,12 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
                 
                 // final long keyHashCode = splitKeyHandler.keyHashCode();
                 long keyHashCode = getKeyHashCode(key);
-                printf("key %ld hash code: %ld\n", key, keyHashCode);
+//                printf("key %ld hash code: %ld\n", key, keyHashCode);
+//                printf("splitmask %d and bitwise and %ld", splitMask, (keyHashCode & splitMask));
 
                 if ((keyHashCode & splitMask) == splitMask)
                 {
-                    printf("relocate %ld\n", key);
+//                    printf("relocate %ld\n", key);
 //                    bucketBufferArray.relocateBlock(filledBucketAddress, blockOffset, newBucketAddress);
                     relocate(env, bucketBufferArray, filledBucketAddress, blockOffset, newBucketAddress);
                 }
