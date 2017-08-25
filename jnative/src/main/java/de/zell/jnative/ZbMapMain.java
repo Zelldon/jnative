@@ -54,35 +54,56 @@ public class ZbMapMain
 //        }
 //        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
         
-        final Long2LongZbMap zbMap  = new Long2LongZbMap(2, 1);
-        zbMap.setMaxTableSize(8);
-        for (int i = 0; i < 4; i++)
-        {
-            zbMap.put(i * 8, i);
-        }
+        final Long2LongZbMap zbMap  = new Long2LongZbMap(8, 1);
 
         // when
-        zbMap.put(32, 4);
+        
+        zbMap.put(0, 0);
+        
+        // split, split, split -> overflow
+        zbMap.put(8, 8);
+        // fill bucket to reach load factor
+        zbMap.put(2, 2);
+
+        // when
+        zbMap.put(16, 16);
+        
 
 //        // then overflow was used to add entries
         
-            if (zbMap.bucketCount() != 8)
+            if (zbMap.bucketCount() != 6)
             {
                 throw new IllegalStateException("Bucket count wrong");
             }
         
             
-            if (zbMap.getBucketBufferArray().getBlockCount() != 5)
+            if (zbMap.getBucketBufferArray().getBlockCount() != 4)
             {
                 throw new IllegalStateException("block count wrong");
             }
             
-        for (int i = 0; i <= 4; i++)
-        {
-            if (zbMap.get(i * 8, -1) == -1)
+            
+        
+        if (zbMap.get(0, -1) != 0)
             {
-                throw new IllegalStateException("Missing value for key: " + i * 8);
+                throw new IllegalStateException("Missing value for key: " + 2 * 8);
             }
-        }
+        
+        // split, split, split -> overflow
+        if (zbMap.get(8, -1) != 8)
+            {
+                throw new IllegalStateException("Missing value for key: " + 2 * 8);
+            }
+        // fill bucket to reach load factor
+        if (zbMap.get(2, -1) != 2)
+            {
+                throw new IllegalStateException("Missing value for key: " + 2 * 8);
+            }
+
+        // when
+            if (zbMap.get(16, -1) != 16)
+            {
+                throw new IllegalStateException("Missing value for key: " + 2 * 8);
+            }
     }
 }

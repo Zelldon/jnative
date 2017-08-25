@@ -950,7 +950,7 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBuc
 
             if (keyFound)
             {
-//                printf("found on block offset %d\n", blockOffset);
+                printf("found on block offset %d\n", blockOffset);
                 foundBlockOffSet = blockOffset;
             }
             
@@ -966,6 +966,8 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBuc
     } while (!keyFound && bucketAddress > 0);
 
 //    printf("end search!");
+    
+    // TODO find a way of return bucketAddress since block can be in overflow bucket
     return foundBlockOffSet;
 }
 
