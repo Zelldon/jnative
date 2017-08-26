@@ -14,6 +14,8 @@
 #ifndef BUCKETBUFFERHEADER_H
 #define BUCKETBUFFERHEADER_H
 
+#include <jni.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,6 +33,11 @@ struct BucketBufferArray {
     long capacity;
 
     long countOfUsedBytes;
+    
+    // block class
+    jclass blockClass;
+    jfieldID blockBucketAddressFieldId;
+    jfieldID blockBlockOffsetFieldId;
 };
 
 

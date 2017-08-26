@@ -362,12 +362,12 @@ public class BucketBufferArray implements AutoCloseable
     private native void relocateBlock(long instanceAddress, long bucketAddress, int blockOffset, long newBucketAddress);
     
     
-    public int findBlockInBucket(long bucketAddress, long key)
+    public boolean findBlockInBucket(long bucketAddress, long key, Block block)
     {
-        return __findBlockInBucket(instanceAddress, bucketAddress, key);
+        return __findBlockInBucket(instanceAddress, bucketAddress, key, block);
     }
     
-    private native int __findBlockInBucket(long instanceAddress, long bucketAddress, long key);
+    private native boolean __findBlockInBucket(long instanceAddress, long bucketAddress, long key, Block block);
     
     public long splitBucket(long filledBucketAddress, int newBucketId, int newBucketDepth)
     {

@@ -355,9 +355,12 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
     private Block findBlockInBucket(long bucketAddress)
     {
         
-        final int blockOffset = bucketBufferArray.findBlockInBucket(bucketAddress, keyHandler.getKey());
         blockHelperInstance.reset();
-        blockHelperInstance.set(bucketAddress, blockOffset);
+        final boolean found = bucketBufferArray.findBlockInBucket(bucketAddress, keyHandler.getKey(), blockHelperInstance);
+        System.out.println("offset: " + blockHelperInstance.getBlockOffset());
+        System.out.println("offset: " + blockHelperInstance.getBucketAddress());
+//        blockHelperInstance.reset();
+//        blockHelperInstance.set(bucketAddress, blockOffset);
         return blockHelperInstance;
 //        
 //        
@@ -509,38 +512,6 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
         return hashTable;
     }
 
-    private static class Block
-    {
-        private long bucketAddress;
-        private int blockOffset;
-
-        public void reset()
-        {
-            bucketAddress = -1;
-            blockOffset = -1;
-        }
-
-        public boolean wasFound()
-        {
-            return bucketAddress != -1 && blockOffset != -1;
-        }
-
-        public void set(long bucketAddress, int blockOffset)
-        {
-            this.bucketAddress = bucketAddress;
-            this.blockOffset = blockOffset;
-        }
-
-        public long getBucketAddress()
-        {
-            return bucketAddress;
-        }
-
-        public int getBlockOffset()
-        {
-            return blockOffset;
-        }
-    }
 
     public String toString()
     {

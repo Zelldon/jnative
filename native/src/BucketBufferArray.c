@@ -921,15 +921,28 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_relocateBlock
 //    }
 //}
 
+void ensureBlockClassIsKnown(JNIEnv *env, struct BucketBufferArray* bucketBufferArray)
+{
+    if (bucketBufferArray->blockClass == NULL)
+    {
+        bucketBufferArray->blockClass = env->FindClass("de/zell/jnative/Block");
+        
+        bucketBufferArray->blockBlockOffsetFieldId = env->GetFieldID(bucketBufferArray->blockClass, "blockOffset", "I");
+        bucketBufferArray->blockBucketAddressFieldId = env->GetFieldID(bucketBufferArray->blockClass, "bucketAddress", "J");
+        
+    }
+}
 
-JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBucket
-(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jlong key)
+JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBucket
+(JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jlong key, jobject block)
 {
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
+    ensureBlockClassIsKnown(env, bucketBufferArray);
     
-    int foundBlockOffSet = -1;
     
-    char keyFound = 0;
+//    int foundBlockOffSet = -1;
+    
+    unsigned char keyFound = 0;
 //    
 //     final Block foundBlock = blockHelperInstance;
 //        foundBlock.reset();
@@ -950,8 +963,11 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBuc
 
             if (keyFound)
             {
-                printf("found on block offset %d\n", blockOffset);
-                foundBlockOffSet = blockOffset;
+                printf("found on block offset %d\n", blockOffset);                
+                env->SetIntField(block, bucketBufferArray->blockBlockOffsetFieldId, blockOffset);
+                env->SetLongField(block, bucketBufferArray->blockBucketAddressFieldId, bucketAddress);
+//                foundBlockOffSet = blockOffset;
+                
             }
             
             blockOffset += bucketBufferArray->maxKeyLength + bucketBufferArray->maxValueLength;
@@ -968,7 +984,7 @@ JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBuc
 //    printf("end search!");
     
     // TODO find a way of return bucketAddress since block can be in overflow bucket
-    return foundBlockOffSet;
+    return keyFound;
 }
 
 jlong getKeyHashCode(jlong key)

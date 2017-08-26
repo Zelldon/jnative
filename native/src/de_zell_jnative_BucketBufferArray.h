@@ -246,10 +246,10 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_relocateBlock
 /*
  * Class:     de_zell_jnative_BucketBufferArray
  * Method:    __findBlockInBucket
- * Signature: (JJJ)I
+ * Signature: (JJJLde/zell/jnative/Block;)Z
  */
-JNIEXPORT jint JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBucket
-  (JNIEnv *, jobject, jlong, jlong, jlong);
+JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBucket
+  (JNIEnv *, jobject, jlong, jlong, jlong, jobject);
 
 /*
  * Class:     de_zell_jnative_BucketBufferArray
