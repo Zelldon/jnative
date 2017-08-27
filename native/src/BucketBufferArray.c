@@ -141,7 +141,7 @@ void clearBucketBufferArray(struct BucketBufferArray* bucketBufferArray)
     free(bucketBufferArray->bucketBufferHeaderAddress);
 }
 
-struct BucketBufferArray* createInstance(jint maxBucketLength, jint maxBucketBlockCount,
+struct BucketBufferArray* createInstance(JNIEnv *env, jint maxBucketLength, jint maxBucketBlockCount,
         jint maxKeyLength, jint maxValueLength, jint maxBucketBufferLength)
 {
     struct BucketBufferArray *bucketBufferArray = malloc(sizeof (struct BucketBufferArray));
@@ -155,6 +155,12 @@ struct BucketBufferArray* createInstance(jint maxBucketLength, jint maxBucketBlo
     bucketBufferArray->realAddresses = malloc(ALLOCATION_FACTOR * sizeof (void*));
     bucketBufferArray->capacity = 0;
     bucketBufferArray->countOfUsedBytes = BUCKET_BUFFER_HEADER_LENGTH;
+    
+    
+    bucketBufferArray->blockClass = (*env)->FindClass(env, "de/zell/jnative/Block");
+
+    bucketBufferArray->blockBlockOffsetFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "blockOffset", "I");
+    bucketBufferArray->blockBucketAddressFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "bucketAddress", "J");
 
 
     //        bucketBufferHeaderAddress = UNSAFE.allocateMemory(MAIN_BUCKET_BUFFER_HEADER_LEN);
@@ -175,7 +181,7 @@ struct BucketBufferArray* createInstance(jint maxBucketLength, jint maxBucketBlo
 JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_createInstance
 (JNIEnv * env, jobject obj, jint maxBucketLength, jint maxBucketBlockCount,
         jint maxKeyLength, jint maxValueLength, jint maxBucketBufferLength) {
-    return (jlong) createInstance(maxBucketLength, maxBucketBlockCount, maxKeyLength, maxValueLength, maxBucketBufferLength);
+    return (jlong) createInstance(env, maxBucketLength, maxBucketBlockCount, maxKeyLength, maxValueLength, maxBucketBufferLength);
 }
 
 /*
@@ -190,7 +196,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray_clearInternal
 
     clearBucketBufferArray(bucketBufferArray);
     
-    struct BucketBufferArray* newBucketBufferArray = createInstance(bucketBufferArray->maxBucketLength,
+    struct BucketBufferArray* newBucketBufferArray = createInstance(env, bucketBufferArray->maxBucketLength,
                    bucketBufferArray->maxBucketBlockCount, 
                    bucketBufferArray->maxKeyLength, 
                    bucketBufferArray->maxValueLength, 
@@ -925,10 +931,11 @@ void ensureBlockClassIsKnown(JNIEnv *env, struct BucketBufferArray* bucketBuffer
 {
     if (bucketBufferArray->blockClass == NULL)
     {
-        bucketBufferArray->blockClass = env->FindClass("de/zell/jnative/Block");
+        printf("init\n");
+        bucketBufferArray->blockClass = (*env)->FindClass(env, "de/zell/jnative/Block");
         
-        bucketBufferArray->blockBlockOffsetFieldId = env->GetFieldID(bucketBufferArray->blockClass, "blockOffset", "I");
-        bucketBufferArray->blockBucketAddressFieldId = env->GetFieldID(bucketBufferArray->blockClass, "bucketAddress", "J");
+        bucketBufferArray->blockBlockOffsetFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "blockOffset", "I");
+        bucketBufferArray->blockBucketAddressFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "bucketAddress", "J");
         
     }
 }
@@ -964,8 +971,8 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockI
             if (keyFound)
             {
                 printf("found on block offset %d\n", blockOffset);                
-                env->SetIntField(block, bucketBufferArray->blockBlockOffsetFieldId, blockOffset);
-                env->SetLongField(block, bucketBufferArray->blockBucketAddressFieldId, bucketAddress);
+                (*env)->SetIntField(env, block, bucketBufferArray->blockBlockOffsetFieldId, blockOffset);
+                (*env)->SetLongField(env, block, bucketBufferArray->blockBucketAddressFieldId, bucketAddress);
 //                foundBlockOffSet = blockOffset;
                 
             }
