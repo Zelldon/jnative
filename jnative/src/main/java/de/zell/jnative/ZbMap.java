@@ -285,7 +285,7 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
                 {
                     bucketAddress = block.getBucketAddress();
                     final int blockOffset = block.getBlockOffset();
-//                    System.out.println("update");
+                    System.out.println("update");
                     bucketBufferArray.updateValue(valueHandler, bucketAddress, blockOffset);
                     modCount += 1;
                     isUpdated = true;
@@ -357,8 +357,8 @@ public abstract class ZbMap<K extends KeyHandler, V extends ValueHandler>
         
         blockHelperInstance.reset();
         final boolean found = bucketBufferArray.findBlockInBucket(bucketAddress, keyHandler.getKey(), blockHelperInstance);
-        System.out.println("offset: " + blockHelperInstance.getBlockOffset());
-        System.out.println("offset: " + blockHelperInstance.getBucketAddress());
+//        System.out.println("offset: " + blockHelperInstance.getBlockOffset());
+//        System.out.println("offset: " + blockHelperInstance.getBucketAddress());
 //        blockHelperInstance.reset();
 //        blockHelperInstance.set(bucketAddress, blockOffset);
         return blockHelperInstance;

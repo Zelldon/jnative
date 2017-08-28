@@ -31,39 +31,28 @@ public class ZbMapMain
     {
 
         // given
-//        final Long2LongZbMap zbMap = new Long2LongZbMap();
-//
-//        System.out.print("Putting...");
-//        // when
-//        long start = System.currentTimeMillis();
-//        for (int i = 0; i < DATA_COUNT; i++)
-//        {
-//            zbMap.put(i, i);
-//        }
-//        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
-//
-//        // then
-//        System.out.print("Getting...");
-//        start = System.currentTimeMillis();
-//        for (int i = 0; i < DATA_COUNT; i++)
-//        {
-//            if (zbMap.get(i, -1) == -1)
-//            {
-//                throw new IllegalStateException("Missing value for key: " + i);
-//            }
-//        }
-//        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
-        
-        final Long2LongZbMap zbMap  = new Long2LongZbMap(8, 1);
+        final Long2LongZbMap zbMap = new Long2LongZbMap();
 
+        System.out.print("Putting...");
         // when
-        
-        zbMap.put(0, 0);
-                
-        
-        if (zbMap.get(0, -1) != 0)
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < DATA_COUNT; i++)
         {
-            throw new IllegalStateException("Missing value for key: " + 2 * 8);
+            zbMap.put(i, i);
         }
+        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
+
+        // then
+        System.out.print("Getting...");
+        start = System.currentTimeMillis();
+        for (int i = 0; i < DATA_COUNT; i++)
+        {
+            if (zbMap.get(i, -1) == -1)
+            {
+                throw new IllegalStateException("Missing value for key: " + i);
+            }
+        }
+        System.out.print("takes" + (System.currentTimeMillis() - start) + " ms.\n");
+        
     }
 }

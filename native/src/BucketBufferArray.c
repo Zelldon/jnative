@@ -927,24 +927,24 @@ JNIEXPORT void JNICALL Java_de_zell_jnative_BucketBufferArray_relocateBlock
 //    }
 //}
 
-void ensureBlockClassIsKnown(JNIEnv *env, struct BucketBufferArray* bucketBufferArray)
-{
-    if (bucketBufferArray->blockClass == NULL)
-    {
-        printf("init\n");
-        bucketBufferArray->blockClass = (*env)->FindClass(env, "de/zell/jnative/Block");
-        
-        bucketBufferArray->blockBlockOffsetFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "blockOffset", "I");
-        bucketBufferArray->blockBucketAddressFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "bucketAddress", "J");
-        
-    }
-}
+//void ensureBlockClassIsKnown(JNIEnv *env, struct BucketBufferArray* bucketBufferArray)
+//{
+//    if (bucketBufferArray->blockClass == NULL)
+//    {
+////        printf("init\n");
+//        bucketBufferArray->blockClass = (*env)->FindClass(env, "de/zell/jnative/Block");
+//        
+//        bucketBufferArray->blockBlockOffsetFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "blockOffset", "I");
+//        bucketBufferArray->blockBucketAddressFieldId = (*env)->GetFieldID(env, bucketBufferArray->blockClass, "bucketAddress", "J");
+//        
+//    }
+//}
 
 JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockInBucket
 (JNIEnv * env, jobject obj, jlong instanceAddress, jlong bucketAddress, jlong key, jobject block)
 {
     struct BucketBufferArray* bucketBufferArray = (struct BucketBufferArray*) instanceAddress;
-    ensureBlockClassIsKnown(env, bucketBufferArray);
+//    ensureBlockClassIsKnown(env, bucketBufferArray);
     
     
 //    int foundBlockOffSet = -1;
@@ -970,7 +970,7 @@ JNIEXPORT jboolean JNICALL Java_de_zell_jnative_BucketBufferArray__1_1findBlockI
 
             if (keyFound)
             {
-                printf("found on block offset %d\n", blockOffset);                
+//                printf("found on block offset %d\n", blockOffset);                
                 (*env)->SetIntField(env, block, bucketBufferArray->blockBlockOffsetFieldId, blockOffset);
                 (*env)->SetLongField(env, block, bucketBufferArray->blockBucketAddressFieldId, bucketAddress);
 //                foundBlockOffSet = blockOffset;
@@ -1065,7 +1065,7 @@ JNIEXPORT jlong JNICALL Java_de_zell_jnative_BucketBufferArray__1_1splitBucket
             int64_t overflowPtr = 0;
             deserialize_int64(bucketPtr + BUCKET_OVERFLOW_POINTER_OFFSET, &overflowPtr);
 
-            printf("Overflowptr: %ld " ,overflowPtr);
+//            printf("Overflowptr: %ld " ,overflowPtr);
             filledBucketAddress = overflowPtr; 
         } while (filledBucketAddress != 0);
         return newBucketAddress;
